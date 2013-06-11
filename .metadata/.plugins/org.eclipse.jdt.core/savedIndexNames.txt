@@ -1,3 +1,0 @@
-INDEX VERSION 1.126+/home/josh/net-centric/project_sonar/.metadata/.plugins/org.eclipse.jdt.core
-3284913023.index
-3179517038.index
