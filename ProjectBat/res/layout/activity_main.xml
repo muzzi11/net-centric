@@ -17,4 +17,13 @@
         android:layout_marginTop="184dp"
         android:text="Bluetooth" />
 
+    <Button
+        android:id="@+id/beep"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/goBlue"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="94dp"
+        android:text="Beep" />
+
 </RelativeLayout>

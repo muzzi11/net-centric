@@ -13,7 +13,7 @@ import android.widget.Button;
 public class MainActivity extends Activity
 {
 	private final String recordFilename = "record"; 
-	private Player player;
+	private static Player player;
 	private Recorder recorder;
 	
     @Override
@@ -24,7 +24,15 @@ public class MainActivity extends Activity
         
         player = new Player(this);
         recorder = new Recorder(recordFilename);
-        player.play();
+        
+        Button beepButton = (Button)findViewById(R.id.beep);
+        beepButton.setOnClickListener(new OnClickListener()
+        {
+        	public void onClick(View v)
+        	{
+        		MainActivity.player.play();
+        	}
+        });
         
         // Initialize the button to perform device discovery
         Button scanButton = (Button) findViewById(R.id.goBlue);
