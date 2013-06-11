@@ -1,0 +1,23 @@
+package com.example.projectbat;
+
+import android.media.MediaRecorder;
+
+public class Recorder
+{
+	private MediaRecorder recorder = new MediaRecorder();
+	private static final String filename = "record"; 
+	
+	public Recorder()
+	{
+		recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+		recorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+        recorder.setOutputFile(filename);
+        recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+	}
+	
+	public boolean start()
+	{
+		
+		recorder.start();
+	}
+}

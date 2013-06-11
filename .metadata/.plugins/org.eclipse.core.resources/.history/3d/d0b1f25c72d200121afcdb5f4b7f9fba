@@ -1,0 +1,13 @@
+package com.example.projectbat;
+
+import android.media.MediaRecorder;
+
+public class Recorder
+{
+	private MediaRecorder recorder;
+	private static final String fileName = "record"; 
+	
+	public void start()
+	{
+	}
+}
