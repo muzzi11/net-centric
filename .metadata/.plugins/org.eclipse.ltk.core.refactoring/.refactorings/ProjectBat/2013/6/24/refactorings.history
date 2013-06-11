@@ -1,4 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<session version="1.0">
-<refactoring comment="Rename resource &apos;ProjectBat/res/raw/beep-8.wav&apos; to &apos;beep.wav&apos;" description="Rename resource &apos;beep-8.wav&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="res/raw/beep-8.wav" name="beep.wav" stamp="1370943810823" updateReferences="true"/>
-</session>
