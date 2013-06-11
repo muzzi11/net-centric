@@ -171,7 +171,11 @@ public class DeviceListActivity extends Activity
                 // Get the BluetoothDevice object from the Intent
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 // Add the name and address to an array adapter to show in a ListView
-                newDevicesArrayAdapter.add(device.getName() + "\n" + device.getAddress());
+                
+                String deviceDescription = device.getName() + "\n" + device.getAddress();
+                
+                if ( newDevicesArrayAdapter.getPosition(deviceDescription) < 0)                
+                	newDevicesArrayAdapter.add(deviceDescription);
             }
         }
     };
