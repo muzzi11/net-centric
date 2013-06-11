@@ -6,7 +6,9 @@ import android.view.Menu;
 
 public class MainActivity extends Activity
 {
-	Player player;
+	private final String recordFilename = "record"; 
+	private Player player;
+	private Recorder recorder;
 	
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -14,6 +16,7 @@ public class MainActivity extends Activity
         setContentView(R.layout.activity_main);
         
         player = new Player(this);
+        recorder = new Recorder(recordFilename);
         player.play();
     }
 
