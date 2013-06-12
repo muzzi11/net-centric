@@ -26,4 +26,13 @@
         android:layout_marginBottom="94dp"
         android:text="Beep" />
 
+    <Button
+        android:id="@+id/record"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/beep"
+        android:layout_alignBottom="@+id/beep"
+        android:layout_toLeftOf="@+id/goBlue"
+        android:text="Rec" />
+
 </RelativeLayout>

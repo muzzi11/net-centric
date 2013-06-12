@@ -12,9 +12,9 @@ import android.widget.Button;
 
 public class MainActivity extends Activity
 {
-	private final String recordFilename = "record"; 
+	private final String recordFilename = "record.3gp";
 	private static Player player;
-	private Recorder recorder;
+	private static Recorder recorder;
 	
     @Override
     protected void onCreate(Bundle savedInstanceState) 
@@ -23,9 +23,28 @@ public class MainActivity extends Activity
         setContentView(R.layout.activity_main);
         
         player = new Player(this);
-        recorder = new Recorder(recordFilename);
+        recorder = new Recorder(this, recordFilename);
         
-        Button beepButton = (Button)findViewById(R.id.beep);
+        final Button recButton = (Button)findViewById(R.id.record);
+        recButton.setOnClickListener(new OnClickListener()
+        {
+        	public void onClick(View v)
+        	{
+        		final Button button = (Button)v;
+        		if(button.getText().equals("Rec"))
+        		{
+        			button.setText("Stop");
+        			MainActivity.recorder.start();
+        		}
+        		else
+        		{
+        			button.setText("Rec");
+        			MainActivity.recorder.stop();
+        		}
+        	}
+        });
+        
+        final Button beepButton = (Button)findViewById(R.id.beep);
         beepButton.setOnClickListener(new OnClickListener()
         {
         	public void onClick(View v)
@@ -35,7 +54,7 @@ public class MainActivity extends Activity
         });
         
         // Initialize the button to perform device discovery
-        Button scanButton = (Button) findViewById(R.id.goBlue);
+        final Button scanButton = (Button) findViewById(R.id.goBlue);
         scanButton.setOnClickListener(new OnClickListener() 
         {       	
             public void onClick(View v) 
