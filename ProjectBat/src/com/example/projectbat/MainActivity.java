@@ -13,8 +13,10 @@ import android.widget.Button;
 public class MainActivity extends Activity
 {
 	private final String recordFilename = "record.3gp";
-	private static Player player;
+	//private static Player player;
 	private static Recorder recorder;
+	
+	private static BeepGenerator beepGenerator;
 	
     @Override
     protected void onCreate(Bundle savedInstanceState) 
@@ -24,6 +26,7 @@ public class MainActivity extends Activity
         
         player = new Player(this);
         recorder = new Recorder(this, recordFilename);
+        beepGenerator = new BeepGenerator();
         
         final Button recButton = (Button)findViewById(R.id.record);
         recButton.setOnClickListener(new OnClickListener()
@@ -40,6 +43,8 @@ public class MainActivity extends Activity
         		{
         			button.setText("Rec");
         			MainActivity.recorder.stop();
+        			Intent intent = new Intent(MainActivity.this, HistogramActivity.class);
+        			startActivity(intent);
         		}
         	}
         });
@@ -49,7 +54,8 @@ public class MainActivity extends Activity
         {
         	public void onClick(View v)
         	{
-        		MainActivity.player.play();
+        		//MainActivity.player.play();
+        		MainActivity.beepGenerator.play();
         	}
         });
         
