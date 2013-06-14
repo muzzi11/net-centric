@@ -24,7 +24,7 @@ public class MainActivity extends Activity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         
-        player = new Player(this);
+        //player = new Player(this);
         recorder = new Recorder(this, recordFilename);
         beepGenerator = new BeepGenerator();
         
