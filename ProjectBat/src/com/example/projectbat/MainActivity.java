@@ -1,10 +1,14 @@
 package com.example.projectbat;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 import com.example.projectbat.R;
 
 import android.os.Bundle;
 import android.app.Activity;
 import android.content.Intent;
+import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -17,6 +21,8 @@ public class MainActivity extends Activity
 	private static Recorder recorder;
 	
 	private static BeepGenerator beepGenerator;
+	private static StreamingRecorder streamingRecorder;
+	private static Timer timer;
 	
     @Override
     protected void onCreate(Bundle savedInstanceState) 
@@ -27,6 +33,8 @@ public class MainActivity extends Activity
         //player = new Player(this);
         recorder = new Recorder(this, recordFilename);
         beepGenerator = new BeepGenerator();
+        streamingRecorder = new StreamingRecorder();
+        
         
         final Button recButton = (Button)findViewById(R.id.record);
         recButton.setOnClickListener(new OnClickListener()
@@ -55,7 +63,30 @@ public class MainActivity extends Activity
         	public void onClick(View v)
         	{
         		//MainActivity.player.play();
+        		MainActivity.streamingRecorder.start();
         		MainActivity.beepGenerator.play();
+        		
+        		timer = new Timer(true);
+        		timer.schedule(new TimerTask()
+        		{
+        			@Override
+        			public void run()
+        			{
+        				MainActivity.streamingRecorder.stop();
+        				short[] buffer = MainActivity.streamingRecorder.getBuffer();
+        				int size = MainActivity.streamingRecorder.numBytesRead();
+            			
+        				Log.i("Main", Integer.toString(size));
+        				
+            			Bundle extra = new Bundle();
+            			extra.putShortArray("data", buffer);
+            			extra.putInt("size", size);
+            			
+            			Intent intent = new Intent(MainActivity.this, HistogramActivity.class);
+            			intent.putExtras(extra);
+            			startActivity(intent);
+        			}
+        		}, 100);
         	}
         });
         

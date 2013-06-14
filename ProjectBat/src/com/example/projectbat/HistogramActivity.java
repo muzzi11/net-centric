@@ -3,9 +3,8 @@ package com.example.projectbat;
 import java.util.Arrays;
 
 import com.androidplot.series.XYSeries;
-import com.androidplot.xy.LineAndPointFormatter;
-import com.androidplot.xy.PointLabelFormatter;
 import com.androidplot.xy.SimpleXYSeries;
+import com.androidplot.xy.StepFormatter;
 import com.androidplot.xy.XYPlot;
 
 import android.os.Bundle;
@@ -25,12 +24,24 @@ public class HistogramActivity extends Activity
 		
 		plot = (XYPlot)findViewById(R.id.plot);
 		
+		Bundle extra = getIntent().getExtras();
+		short data[] = extra.getShortArray("data");
+		int size = extra.getInt("size");
 		// Create a couple arrays of y-values to plot:
-        Number[] serieNumbers = {1, 8, 5, 2, 7, 4};
+        Number[] numbers = new Number[size/10];
         
-        XYSeries serie = new SimpleXYSeries(Arrays.asList(serieNumbers), SimpleXYSeries.ArrayFormat.Y_VALS_ONLY, "Serie");
-        plot.addSeries(serie,
-                new LineAndPointFormatter(Color.rgb(0, 0, 200), Color.rgb(0, 0, 100), null, new PointLabelFormatter(Color.WHITE)));
+        for(int i = 0; i < numbers.length; ++i)
+        {
+        	float avg = 0.0f;
+        	int k;
+        	for(k = i*10; k < i*10 + 10 && k < size; ++k)
+        		avg += data[k];
+        	avg /= (k - i*10);
+        	numbers[i] = avg / (float)Short.MAX_VALUE;
+        }
+        
+        XYSeries serie = new SimpleXYSeries(Arrays.asList(numbers), SimpleXYSeries.ArrayFormat.Y_VALS_ONLY, "Serie");
+        plot.addSeries(serie, new StepFormatter(Color.rgb(0, 0, 200), Color.rgb(0, 0, 100)));
         
         plot.setTicksPerRangeLabel(3);
 	}

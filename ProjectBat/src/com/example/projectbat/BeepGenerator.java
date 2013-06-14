@@ -7,7 +7,7 @@ import android.util.Log;
 
 public class BeepGenerator
 {
-	private final short buffer[] = new short[100];
+	private final short buffer[] = new short[1000];
 	private final int sampleRate;
 	private final AudioTrack track;
 	
@@ -28,7 +28,7 @@ public class BeepGenerator
 		track.write(buffer, 0, buffer.length);
 	}
 	
-	void play()
+	public void play()
 	{
 		track.stop();
 		if(AudioTrack.SUCCESS != track.reloadStaticData())
