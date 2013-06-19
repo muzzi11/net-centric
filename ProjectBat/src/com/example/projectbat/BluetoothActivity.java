@@ -38,8 +38,6 @@ public class BluetoothActivity extends Activity
 	private ArrayAdapter<String> pairedAdapters;
 	
 	private final UUID uuid = UUID.fromString("04c6093b-0000-1000-8000-00805f9b34fb");
-	
-	private long time = System.currentTimeMillis();
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState)
