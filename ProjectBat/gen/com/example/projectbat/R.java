@@ -35,26 +35,30 @@ or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>na
         public static final int ic_launcher=0x7f020000;
     }
     public static final class id {
-        public static final int action_settings=0x7f0a0009;
-        public static final int beep=0x7f0a0002;
-        public static final int button_scan=0x7f0a0008;
-        public static final int goBlue=0x7f0a0001;
-        public static final int new_devices=0x7f0a0007;
-        public static final int paired_devices=0x7f0a0005;
-        public static final int plot=0x7f0a0000;
-        public static final int record=0x7f0a0003;
-        public static final int title_new_devices=0x7f0a0006;
-        public static final int title_paired_devices=0x7f0a0004;
+        public static final int action_settings=0x7f0a000b;
+        public static final int beep=0x7f0a0004;
+        public static final int button_scan=0x7f0a000a;
+        public static final int connectionList=0x7f0a0000;
+        public static final int goBlue=0x7f0a0003;
+        public static final int macAddress=0x7f0a0001;
+        public static final int new_devices=0x7f0a0009;
+        public static final int paired_devices=0x7f0a0007;
+        public static final int plot=0x7f0a0002;
+        public static final int record=0x7f0a0005;
+        public static final int title_new_devices=0x7f0a0008;
+        public static final int title_paired_devices=0x7f0a0006;
     }
     public static final class layout {
-        public static final int activity_histogram=0x7f030000;
-        public static final int activity_main=0x7f030001;
-        public static final int device_list=0x7f030002;
-        public static final int device_name=0x7f030003;
+        public static final int activity_bluetooth=0x7f030000;
+        public static final int activity_histogram=0x7f030001;
+        public static final int activity_main=0x7f030002;
+        public static final int device_list=0x7f030003;
+        public static final int device_name=0x7f030004;
     }
     public static final class menu {
-        public static final int histogram=0x7f090000;
-        public static final int main=0x7f090001;
+        public static final int bluetooth=0x7f090000;
+        public static final int histogram=0x7f090001;
+        public static final int main=0x7f090002;
     }
     public static final class raw {
         public static final int beep=0x7f040000;
@@ -65,6 +69,7 @@ or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>na
         public static final int dummy_button=0x7f070004;
         public static final int dummy_content=0x7f070005;
         public static final int hello_world=0x7f070002;
+        public static final int title_activity_bluetooth=0x7f070006;
         public static final int title_activity_histogram=0x7f070003;
     }
     public static final class style {
