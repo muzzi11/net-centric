@@ -29,9 +29,17 @@
         android:id="@+id/connectionList"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
+        android:layout_above="@+id/button1"
         android:layout_below="@+id/receivedMsg" >
 
     </ListView>
+
+    <Button
+        android:id="@+id/startDiscovery"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:text="Start Discovery" />
 
 </RelativeLayout>

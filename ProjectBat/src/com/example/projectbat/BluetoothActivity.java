@@ -11,7 +11,10 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.util.Log;
 import android.view.Menu;
+import android.view.View;
+import android.view.View.OnClickListener;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -28,7 +31,7 @@ public class BluetoothActivity extends Activity implements BluetoothInterface
 	
 	private ArrayAdapter<String> pairedAdapters;	
 	
-	private BroadcastReceiver receiver = new BroadcastReceiver() {
+	private final BroadcastReceiver receiver = new BroadcastReceiver() {
 	    public void onReceive(Context context, Intent intent) {
 	        final String action = intent.getAction();
 
@@ -56,8 +59,7 @@ public class BluetoothActivity extends Activity implements BluetoothInterface
 		        	for (BluetoothDevice dev : foundDevices)
 		        	{
 		        		btService.connect(dev);
-		        	}
-		        	btService.broadcastMessage("Hai Hai Hai");
+		        	}		        	
 	        	}
 	        }
 	    }
@@ -120,7 +122,16 @@ public class BluetoothActivity extends Activity implements BluetoothInterface
 		// Register the BroadcastReceiver
 		final IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
 		filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
-		registerReceiver(receiver, filter);		
+		registerReceiver(receiver, filter);
+		
+		final Button discoveryButton = (Button) findViewById(R.id.startDiscovery);
+		discoveryButton.setOnClickListener(new OnClickListener() 
+        {       	
+            public void onClick(View v) 
+            {
+            	btService.broadcastMessage("Hello");            	
+            }
+        });      
 	}	
 	
 	@Override
