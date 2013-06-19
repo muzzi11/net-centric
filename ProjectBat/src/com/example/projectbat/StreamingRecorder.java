@@ -1,7 +1,5 @@
 package com.example.projectbat;
 
-import java.util.Arrays;
-
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
@@ -11,7 +9,7 @@ public class StreamingRecorder
 {
 	// supposedly supported by all devices
 	private final int sampleRate = 44100;
-	private final AudioRecord record;
+	private AudioRecord record;
 	private final short buffer[];
 	private int bytesRead = 0;
 	
@@ -25,19 +23,28 @@ public class StreamingRecorder
 		
 		Log.i("StreamingRecorder", Integer.toString(bufferSize));
 		
-		record = new AudioRecord(MediaRecorder.AudioSource.MIC, sampleRate,
-				AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, buffer.length);
+		try
+		{
+			record = new AudioRecord(MediaRecorder.AudioSource.MIC, sampleRate,
+					AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, buffer.length);
+		}
+		catch(IllegalArgumentException e)
+		{
+			Log.e("StreamingRecorder", e.getMessage());
+		}
 	}
 	
 	public void start()
 	{
-		record.startRecording();
+		try { record.startRecording(); }
+		catch(IllegalStateException e) { Log.e("StreamingRecorder", e.getMessage()); }
 	}
 	
 	public void stop()
 	{
-		bytesRead = record.read(buffer, 0, buffer.length); 
-		record.stop();
+		bytesRead = record.read(buffer, 0, buffer.length);
+		try { record.stop(); }
+		catch(IllegalStateException e) { Log.e("StreamingRecorder", e.getMessage()); }
 	}
 	
 	public int numBytesRead()
