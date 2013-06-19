@@ -20,16 +20,16 @@ public class MainActivity extends Activity
 	private static StreamingRecorder streamingRecorder;
 	private static Timer timer;
 	private long time = 0;
+
 	
     @Override
     protected void onCreate(Bundle savedInstanceState) 
     {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_main);        
         
         beepGenerator = new BeepGenerator();
         streamingRecorder = new StreamingRecorder();
-
         
         final Button beepButton = (Button)findViewById(R.id.beep);
         beepButton.setOnClickListener(new OnClickListener()
