@@ -23,6 +23,7 @@ public class MainActivity extends Activity
 	private static BeepGenerator beepGenerator;
 	private static StreamingRecorder streamingRecorder;
 	private static Timer timer;
+	private long time = 0;
 	
     @Override
     protected void onCreate(Bundle savedInstanceState) 
@@ -62,16 +63,17 @@ public class MainActivity extends Activity
         {
         	public void onClick(View v)
         	{
-        		//MainActivity.player.play();
+        		timer = new Timer(true);
         		MainActivity.streamingRecorder.start();
+        		time = System.currentTimeMillis();
         		MainActivity.beepGenerator.play();
         		
-        		timer = new Timer(true);
         		timer.schedule(new TimerTask()
         		{
         			@Override
         			public void run()
         			{
+        				Log.i("generator time", Long.toString(System.currentTimeMillis() - time));
         				MainActivity.streamingRecorder.stop();
         				short[] buffer = MainActivity.streamingRecorder.getBuffer();
         				int size = MainActivity.streamingRecorder.numBytesRead();
@@ -96,7 +98,7 @@ public class MainActivity extends Activity
         {       	
             public void onClick(View v) 
             {
-            	Intent intent = new Intent(MainActivity.this, DeviceListActivity.class);
+            	Intent intent = new Intent(MainActivity.this, BluetoothActivity.class);
             	startActivity(intent);
             }
         });      
