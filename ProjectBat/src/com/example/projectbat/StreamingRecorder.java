@@ -10,23 +10,22 @@ public class StreamingRecorder
 	// supposedly supported by all devices
 	private final int sampleRate = 44100;
 	private AudioRecord record;
-	private final short buffer[];
-	private int bytesRead = 0;
+	private int offset = 0;
+	private int bufferSize;
 	
 	StreamingRecorder()
 	{
-		int bufferSize = AudioRecord.getMinBufferSize(sampleRate, AudioFormat.CHANNEL_IN_MONO,
+		bufferSize = AudioRecord.getMinBufferSize(sampleRate, AudioFormat.CHANNEL_IN_MONO,
 				AudioFormat.ENCODING_PCM_16BIT);
-		// Record for a minimum of half a second
-		if(sampleRate / 2 > bufferSize) bufferSize = sampleRate / 2;
-		buffer = new short[bufferSize];
+		// Hold recording data for a minimum of 1/4 of a second
+		if(sampleRate / 2 > bufferSize) bufferSize = sampleRate / 4;
 		
 		Log.i("StreamingRecorder", Integer.toString(bufferSize));
 		
 		try
 		{
 			record = new AudioRecord(MediaRecorder.AudioSource.MIC, sampleRate,
-					AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, buffer.length);
+					AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, bufferSize);
 		}
 		catch(IllegalArgumentException e)
 		{
@@ -42,18 +41,16 @@ public class StreamingRecorder
 	
 	public void stop()
 	{
-		bytesRead = record.read(buffer, 0, buffer.length);
 		try { record.stop(); }
 		catch(IllegalStateException e) { Log.e("StreamingRecorder", e.getMessage()); }
 	}
 	
-	public int numBytesRead()
+	public final int get(short[] buffer, final int sizeInShorts)
 	{
-		return bytesRead;
-	}
-	
-	public final short[] getBuffer()
-	{
-		return buffer;
+		final int shortsRead = record.read(buffer, offset, sizeInShorts);
+		offset += shortsRead;
+		offset %= bufferSize;
+		
+		return shortsRead;
 	}
 }

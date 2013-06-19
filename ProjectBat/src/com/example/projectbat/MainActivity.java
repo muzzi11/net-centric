@@ -19,7 +19,6 @@ public class MainActivity extends Activity
 	private static BeepGenerator beepGenerator;
 	private static StreamingRecorder streamingRecorder;
 	private static Timer timer;
-	private long time = 0;
 
 	
     @Override
@@ -38,7 +37,6 @@ public class MainActivity extends Activity
         	{
         		timer = new Timer(true);
         		MainActivity.streamingRecorder.start();
-        		time = System.currentTimeMillis();
         		MainActivity.beepGenerator.play();
         		
         		timer.schedule(new TimerTask()
@@ -46,10 +44,9 @@ public class MainActivity extends Activity
         			@Override
         			public void run()
         			{
-        				Log.i("generator time", Long.toString(System.currentTimeMillis() - time));
+        				short[] buffer = new short[11025];
+        				final int size = MainActivity.streamingRecorder.get(buffer, buffer.length);
         				MainActivity.streamingRecorder.stop();
-        				short[] buffer = MainActivity.streamingRecorder.getBuffer();
-        				int size = MainActivity.streamingRecorder.numBytesRead();
             			
         				Log.i("Main", Integer.toString(size));
         				
