@@ -15,11 +15,7 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 
 public class MainActivity extends Activity
-{
-	private final String recordFilename = "record.3gp";
-	//private static Player player;
-	private static Recorder recorder;
-	
+{	
 	private static BeepGenerator beepGenerator;
 	private static StreamingRecorder streamingRecorder;
 	private static Timer timer;
@@ -31,32 +27,9 @@ public class MainActivity extends Activity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         
-        //player = new Player(this);
-        recorder = new Recorder(this, recordFilename);
         beepGenerator = new BeepGenerator();
         streamingRecorder = new StreamingRecorder();
-        
-        
-        final Button recButton = (Button)findViewById(R.id.record);
-        recButton.setOnClickListener(new OnClickListener()
-        {
-        	public void onClick(View v)
-        	{
-        		final Button button = (Button)v;
-        		if(button.getText().equals("Rec"))
-        		{
-        			button.setText("Stop");
-        			MainActivity.recorder.start();
-        		}
-        		else
-        		{
-        			button.setText("Rec");
-        			MainActivity.recorder.stop();
-        			Intent intent = new Intent(MainActivity.this, HistogramActivity.class);
-        			startActivity(intent);
-        		}
-        	}
-        });
+
         
         final Button beepButton = (Button)findViewById(R.id.beep);
         beepButton.setOnClickListener(new OnClickListener()
