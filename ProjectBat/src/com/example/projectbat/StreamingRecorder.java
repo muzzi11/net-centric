@@ -1,5 +1,6 @@
 package com.example.projectbat;
 
+import java.nio.ByteBuffer;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
@@ -46,12 +47,28 @@ public class StreamingRecorder
 		catch(IllegalStateException e) { Log.e("StreamingRecorder", e.getMessage()); }
 	}
 	
-	public final int read(short[] buffer, int sizeInShorts)
+	/**
+	 * IMPORTANT: A single sample takes 2 bytes.
+	 * 
+	 * Blocks until buffer has at least 'sizeInBytes' elements filled. Buffer must be direct.
+	 * @param buffer Must be large enough to contain 2*'sizeInBytes' elements.
+	 * @param sizeInBytes Minimum size to be read, might be more.
+	 * @return Amount of elements filled in 'buffer'
+	 */
+	public final int read(ByteBuffer buffer, int sizeInBytes)
 	{
-		final int shortsRead = record.read(buffer, offset, sizeInShorts);
-		offset += shortsRead;
-		offset %= bufferSize;
+		assert(buffer.capacity() >= (2*sizeInBytes));
 		
-		return shortsRead;
+		int currentSize = 0;
+		while(currentSize < sizeInBytes)
+		{
+			buffer.position(currentSize);
+			final int shortsRead = record.read(buffer, offset);
+			currentSize += shortsRead;
+			offset += shortsRead;
+			offset %= bufferSize;
+		}
+		
+		return currentSize;
 	}
 }

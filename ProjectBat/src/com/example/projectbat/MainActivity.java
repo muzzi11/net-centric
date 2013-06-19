@@ -1,5 +1,6 @@
 package com.example.projectbat;
 
+import java.nio.ByteBuffer;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -44,15 +45,15 @@ public class MainActivity extends Activity
         			@Override
         			public void run()
         			{
-        				short[] buffer = new short[11025];
-        				final int size = MainActivity.streamingRecorder.read(buffer, buffer.length);
+        				ByteBuffer buffer = ByteBuffer.allocateDirect(44100);
+        				final int samples = MainActivity.streamingRecorder.read(buffer, buffer.capacity() / 2) / 2;
         				MainActivity.streamingRecorder.stop();
             			
-        				Log.i("Main", Integer.toString(size));
+        				Log.i("Main", Integer.toString(samples));
         				
             			Bundle extra = new Bundle();
-            			extra.putShortArray("data", buffer);
-            			extra.putInt("size", size);
+            			extra.putShortArray("data", buffer.asShortBuffer().array());
+            			extra.putInt("samples", samples);
             			
             			Intent intent = new Intent(MainActivity.this, HistogramActivity.class);
             			intent.putExtras(extra);

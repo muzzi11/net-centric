@@ -28,9 +28,9 @@ public class HistogramActivity extends Activity
 		
 		Bundle extra = getIntent().getExtras();
 		short data[] = extra.getShortArray("data");
-		int size = extra.getInt("size");
+		int samples = extra.getInt("samples");
 		
-		float fft[] = new float[size];
+		float fft[] = new float[samples];
 		for(int i = 0; i < fft.length; ++i)
 		{
 			fft[i] = data[i] / (float) Short.MAX_VALUE;
@@ -40,20 +40,10 @@ public class HistogramActivity extends Activity
 		floatFFT.realForward(fft);
 		
 		// Create a couple arrays of y-values to plot:
-        Number[] numbers = new Number[size / 10];
-        /*
+        Number[] numbers = new Number[samples / 10];
         for(int i = 0; i < numbers.length; ++i)
         {
-        	float avg = 0.0f;
-        	int k;
-        	for(k = i*10; k < i*10 + 10 && k < size; ++k)
-        		avg += data[k];
-        	avg /= (k - i*10);
-        	numbers[i] = avg / (float)Short.MAX_VALUE;
-        }*/
-        for(int i = 0; i < numbers.length; ++i)
-        {
-        	numbers[i] = fft[size / 10 - numbers.length / 2 + i];
+        	numbers[i] = fft[samples / 10 - numbers.length / 2 + i];
         }
         
         XYSeries serie = new SimpleXYSeries(Arrays.asList(numbers), SimpleXYSeries.ArrayFormat.Y_VALS_ONLY, "FFT");
