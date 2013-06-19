@@ -1,6 +1,5 @@
 package com.example.projectbat;
 
-import java.nio.ByteBuffer;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
@@ -11,7 +10,6 @@ public class StreamingRecorder
 	// supposedly supported by all devices
 	private final int sampleRate = 44100;
 	private AudioRecord record;
-	private int offset = 0;
 	private int bufferSize;
 	
 	StreamingRecorder()
@@ -42,33 +40,24 @@ public class StreamingRecorder
 	
 	public void stop()
 	{
-		offset = 0;
 		try { record.stop(); }
 		catch(IllegalStateException e) { Log.e("StreamingRecorder", e.getMessage()); }
 	}
 	
 	/**
-	 * IMPORTANT: A single sample takes 2 bytes.
-	 * 
-	 * Blocks until buffer has at least 'sizeInBytes' elements filled. Buffer must be direct.
-	 * @param buffer Must be large enough to contain 2*'sizeInBytes' elements.
-	 * @param sizeInBytes Minimum size to be read, might be more.
-	 * @return Amount of elements filled in 'buffer'
+	 * Blocks until buffer is filled with sizeInShorts elements.
+	 * @param buffer Needs to be larger than or equal to sizeInShorts.
+	 * @param sizeInShorts Amount of samples to be read.
 	 */
-	public final int read(ByteBuffer buffer, int sizeInBytes)
+	public final void read(short[] buffer, int sizeInShorts)
 	{
-		assert(buffer.capacity() >= (2*sizeInBytes));
+		assert(buffer.length >= sizeInShorts);
 		
 		int currentSize = 0;
-		while(currentSize < sizeInBytes)
+		while(currentSize < sizeInShorts)
 		{
-			buffer.position(currentSize);
-			final int shortsRead = record.read(buffer, offset);
+			final int shortsRead = record.read(buffer, currentSize, sizeInShorts - currentSize);
 			currentSize += shortsRead;
-			offset += shortsRead;
-			offset %= bufferSize;
 		}
-		
-		return currentSize;
 	}
 }

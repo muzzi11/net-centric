@@ -1,6 +1,5 @@
 package com.example.projectbat;
 
-import java.nio.ByteBuffer;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -9,7 +8,6 @@ import com.example.projectbat.R;
 import android.os.Bundle;
 import android.app.Activity;
 import android.content.Intent;
-import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -45,15 +43,12 @@ public class MainActivity extends Activity
         			@Override
         			public void run()
         			{
-        				ByteBuffer buffer = ByteBuffer.allocateDirect(44100);
-        				final int samples = MainActivity.streamingRecorder.read(buffer, buffer.capacity() / 2) / 2;
+        				short[] buffer = new short[11025];
+        				MainActivity.streamingRecorder.read(buffer, buffer.length);
         				MainActivity.streamingRecorder.stop();
-            			
-        				Log.i("Main", Integer.toString(samples));
         				
             			Bundle extra = new Bundle();
-            			extra.putShortArray("data", buffer.asShortBuffer().array());
-            			extra.putInt("samples", samples);
+            			extra.putShortArray("data", buffer);
             			
             			Intent intent = new Intent(MainActivity.this, HistogramActivity.class);
             			intent.putExtras(extra);
