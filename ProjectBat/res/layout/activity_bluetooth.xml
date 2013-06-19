@@ -8,16 +8,6 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context=".BluetoothActivity" >
 
-    <ListView
-        android:id="@+id/connectionList"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentRight="true"
-        android:layout_below="@+id/macAddress" >
-
-    </ListView>
-
     <TextView
         android:id="@+id/macAddress"
         android:layout_width="wrap_content"
@@ -26,5 +16,22 @@
         android:layout_alignParentTop="true"
         android:layout_alignRight="@+id/connectionList"
         android:text="TextView" />
+
+    <TextView
+        android:id="@+id/receivedMsg"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/connectionList"
+        android:layout_below="@+id/macAddress"
+        android:text="TextView" />
+
+    <ListView
+        android:id="@+id/connectionList"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_below="@+id/receivedMsg" >
+
+    </ListView>
 
 </RelativeLayout>
