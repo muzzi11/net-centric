@@ -45,7 +45,7 @@ public class MainActivity extends Activity
         			public void run()
         			{
         				short[] buffer = new short[11025];
-        				final int size = MainActivity.streamingRecorder.get(buffer, buffer.length);
+        				final int size = MainActivity.streamingRecorder.read(buffer, buffer.length);
         				MainActivity.streamingRecorder.stop();
             			
         				Log.i("Main", Integer.toString(size));

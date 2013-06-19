@@ -17,8 +17,8 @@ public class StreamingRecorder
 	{
 		bufferSize = AudioRecord.getMinBufferSize(sampleRate, AudioFormat.CHANNEL_IN_MONO,
 				AudioFormat.ENCODING_PCM_16BIT);
-		// Hold recording data for a minimum of 1/4 of a second
-		if(sampleRate / 2 > bufferSize) bufferSize = sampleRate / 4;
+		// Hold recording data for a minimum of half a second
+		if(sampleRate / 2 > bufferSize) bufferSize = sampleRate / 2;
 		
 		Log.i("StreamingRecorder", Integer.toString(bufferSize));
 		
@@ -41,11 +41,12 @@ public class StreamingRecorder
 	
 	public void stop()
 	{
+		offset = 0;
 		try { record.stop(); }
 		catch(IllegalStateException e) { Log.e("StreamingRecorder", e.getMessage()); }
 	}
 	
-	public final int get(short[] buffer, final int sizeInShorts)
+	public final int read(short[] buffer, int sizeInShorts)
 	{
 		final int shortsRead = record.read(buffer, offset, sizeInShorts);
 		offset += shortsRead;
