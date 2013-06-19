@@ -27,18 +27,144 @@ public class BluetoothActivity extends Activity
 	private static final int REQUEST_ENABLE_BT = 1;
 	private static final int REQUEST_DISCOVERABLE = 2;
 	
-	private BluetoothAdapter btAdapter;
-	private BroadcastReceiver receiver;
+	private BluetoothAdapter btAdapter;	
 	private BluetoothServerSocket btServerSocket;
+	private BluetoothDevice parent;
+	private BluetoothDevice child;
 	
 	private final Map<String, BluetoothSocket> sockets = new HashMap<String, BluetoothSocket>();
 	private final Map<String, BluetoothSocket> redundantSockets = new HashMap<String, BluetoothSocket>();
+	private Map<String, Float> timings = new HashMap<String, Float>();
 	
+	private ArrayList<BluetoothDevice> foundDevices = new ArrayList<BluetoothDevice>();
 	private final ArrayList<String> pairedData = new ArrayList<String>();
+	
 	private ArrayAdapter<String> pairedAdapters;
 	
-	private final UUID uuid = UUID.fromString("04c6093b-0000-1000-8000-00805f9b34fb");
+	private final UUID uuid = UUID.fromString("04c6093b-0000-1000-8000-00805f9b34fb");	
+	
+	private BroadcastReceiver receiver = new BroadcastReceiver() {
+	    public void onReceive(Context context, Intent intent) {
+	        final String action = intent.getAction();
 
+	        if (BluetoothDevice.ACTION_FOUND.equals(action))
+	        {
+	            // Get the BluetoothDevice object from the Intent
+	            final BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+	            final String name = device.getName();
+	            
+	            if( name.equals("projectThunder") && !foundDevices.contains(device) ) foundDevices.add(device);            	
+	            		            
+	        }	        
+	        else if(BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action))
+	        {	        	
+	        	Log.i("Bluetooth", "Discovery finished");
+	        	for (BluetoothDevice dev : foundDevices)
+	        	{
+	        		connect(dev);
+	        	}	        	
+	        }
+	    }
+	};
+	
+	private Thread acceptThread = new Thread(new Runnable()
+	{
+		public void run()
+		{
+			BluetoothSocket btSocket = null;
+			
+			Log.i("Bluetooth", "Accepting sheezy my neezy");
+			try{ btSocket = btServerSocket.accept(); }
+			catch(IOException e){ Log.e("Bluetooth", e.getMessage()); }
+			
+			if(btSocket != null)
+			{
+				Log.i("Bluetooth", "CONNECTED GEEZY");
+				
+				final BluetoothDevice remoteDevice = btSocket.getRemoteDevice();
+				final String address = remoteDevice.getAddress();
+				
+				if( !sockets.containsKey(address) )
+				{
+					sockets.put(address, btSocket);
+					
+					BluetoothActivity.this.runOnUiThread(new Runnable()
+					{
+						public void run()
+						{
+							pairedData.add(address);
+	            			pairedAdapters.notifyDataSetChanged();
+						}
+					});
+				}
+				else if( !redundantSockets.containsKey(address))
+				{
+					redundantSockets.put(address, btSocket);
+				}				
+			}
+		}
+	});
+	
+	private Thread connectedThread = new Thread(new Runnable()
+	{
+		public void run()
+		{
+			
+		}
+	});
+	
+	private void connect(BluetoothDevice device)
+	{
+		synchronized(sockets)
+		{	        
+        	btAdapter.cancelDiscovery();
+        	
+        	BluetoothSocket btSocket = null;
+        	try
+        	{
+				btSocket = device.createInsecureRfcommSocketToServiceRecord(uuid);
+			}
+        	catch (IOException e)
+			{
+				Log.e("Bluetooth", e.getMessage());
+			}
+        	
+        	if(btSocket != null)
+        	{
+        		try
+        		{
+					btSocket.connect();
+				}
+        		catch (IOException e)
+        		{
+        			try{ btSocket.close(); }
+        			catch(IOException e1){ Log.e("Bluetooth", e1.getMessage()); }
+        			
+        			Log.e("Bluetooth", e.getMessage());
+				}
+        		
+        		if(btSocket.isConnected())
+        		{
+        			final String address = device.getAddress();
+        			
+        			Log.i("Bluetooth", "Connected DJECKO");	        			
+        			
+    				if( !sockets.containsKey(address) )
+    				{
+    					sockets.put(address, btSocket);
+    					
+    					pairedData.add(address);
+            			pairedAdapters.notifyDataSetChanged();
+    				}
+    			}		            			
+        	}
+        	else
+        	{
+        		Log.e("Bluetooth", "Failed to get socket.");
+        	}
+        }	
+	}
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState)
 	{
@@ -63,84 +189,13 @@ public class BluetoothActivity extends Activity
 		Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
 		discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 3600);
 		startActivityForResult(discoverableIntent, REQUEST_DISCOVERABLE);
-		
-		receiver = new BroadcastReceiver() {
-		    public void onReceive(Context context, Intent intent) {
-		        final String action = intent.getAction();
-
-		        if (BluetoothDevice.ACTION_FOUND.equals(action))
-		        {
-		            // Get the BluetoothDevice object from the Intent
-		            final BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-		            final String address = device.getAddress();
-
-		            synchronized(sockets)
-        			{
-			            if(device.getName().equals("projectThunder") && !sockets.containsKey(address))
-			            {
-			            	Log.i("Bluetooth", "Found projectThunder device: "+address);
-			            	btAdapter.cancelDiscovery();
-			            	
-			            	BluetoothSocket btSocket = null;
-			            	try
-			            	{
-								btSocket = device.createInsecureRfcommSocketToServiceRecord(uuid);
-							}
-			            	catch (IOException e)
-							{
-								Log.e("Bluetooth", e.getMessage());
-							}
-			            	
-			            	if(btSocket != null)
-			            	{
-			            		try
-			            		{
-									btSocket.connect();
-								}
-			            		catch (IOException e)
-			            		{
-			            			try{ btSocket.close(); }
-			            			catch(IOException e1){ Log.e("Bluetooth", e1.getMessage()); }
-			            			
-			            			Log.e("Bluetooth", e.getMessage());
-								}
-			            		
-			            		if(btSocket.isConnected())
-			            		{
-			            			Log.i("Bluetooth", "Connected DJECKO");
-			            			
-			            			
-		            				if( !sockets.containsKey(address) )
-		            				{
-		            					sockets.put(address, btSocket);
-		            					
-		            					pairedData.add(address);
-				            			pairedAdapters.notifyDataSetChanged();
-		            				}
-		            			}		            			
-			            	}
-			            	else
-			            	{
-			            		Log.e("Bluetooth", "Failed to get socket.");
-			            	}
-			            }
-        			}
-		        }
-		        else if(BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action))
-		        {
-		        	//if(System.currentTimeMillis() - time < 30000)
-		        	{
-		        		btAdapter.startDiscovery();
-		        		Log.i("Bluetooth", "Restarting discovery");
-		        	}
-		        }
-		    }
-		};
+				
 		// Register the BroadcastReceiver
 		final IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
 		filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
 		registerReceiver(receiver, filter);
 		
+		// Setup server socket
 		try
 		{
 			btServerSocket = btAdapter.listenUsingInsecureRfcommWithServiceRecord("THUNDER", uuid);
@@ -150,52 +205,14 @@ public class BluetoothActivity extends Activity
 			Log.e("Bluetooth", e.getMessage());
 			finish();
 		}
-	}
+	}	
 	
 	@Override
-	protected void onStart() {
+	protected void onStart() 
+	{
 		super.onStart();
 		
-		new Thread(new Runnable()
-		{
-			public void run()
-			{
-				BluetoothSocket btSocket = null;
-				
-				Log.i("Bluetooth", "Accepting sheezy my neezy");
-				try{ btSocket = btServerSocket.accept(); }
-				catch(IOException e){ Log.e("Bluetooth", e.getMessage()); }
-				
-				if(btSocket != null)
-				{
-					Log.i("Bluetooth", "CONNECTED GEEZY");
-					
-					final BluetoothDevice remoteDevice = btSocket.getRemoteDevice();
-					final String address = remoteDevice.getAddress();
-					
-					synchronized(sockets)
-					{
-						if( !sockets.containsKey(address) )
-						{
-							sockets.put(address, btSocket);
-							
-							BluetoothActivity.this.runOnUiThread(new Runnable()
-							{
-								public void run()
-								{
-									pairedData.add(address);
-			            			pairedAdapters.notifyDataSetChanged();
-								}
-							});
-						}
-						else if( !redundantSockets.containsKey(address))
-						{
-							redundantSockets.put(address, btSocket);
-						}
-					}
-				}
-			}
-		}).start();
+		acceptThread.start();
 		
 		Log.i("Bluetooth", "Start discovering");
 		btAdapter.startDiscovery();
@@ -203,7 +220,8 @@ public class BluetoothActivity extends Activity
 	}
 	
 	@Override
-	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) 
+	{
 		super.onActivityResult(requestCode, resultCode, data);
 		
 		if(requestCode == REQUEST_ENABLE_BT && resultCode != RESULT_OK)
@@ -219,7 +237,8 @@ public class BluetoothActivity extends Activity
 	}
 	
 	@Override
-	protected void onDestroy() {
+	protected void onDestroy() 
+	{
 		super.onDestroy();
 		
 		unregisterReceiver(receiver);
