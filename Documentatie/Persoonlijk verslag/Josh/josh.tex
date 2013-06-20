@@ -4,7 +4,6 @@
 \usepackage{a4wide}
 \usepackage{amsmath}
 \usepackage{enumerate}
-\usepackage{eurosym}
 \usepackage{url}
 \usepackage{graphicx}
 
@@ -20,21 +19,25 @@ Dit is mijn persoonlijk verslag van mijn uitgevoerde activiteiten.
 
 \section*{Week 1}
 \subsection*{Maandag}
-
+Brainstormen over mogelijke onderwerpen met Mustafa. Uiteindelijk besloten om een 
+akoestische lokalisatie systeem met Android telefoons te gaan maken. De wiskunde voor het relatief bepalen van posities hebben we in de middag uitgewerkt.
 
 \subsection*{Dinsdag}
-
+Nadat we de lange termijn planning hadden uitgestippeld, kon ik beginnen met het bluetooth gedeelte. Ik had bluetooth device discovery geïmplementeerd met activities voor weergave. Daarna begon ik aan bluetooth verbindings code.
+Ook had ik een knop aangemaakt om bluetooth modus in te schakelen.
 
 \subsection*{Woensdag}
-
+Ik had de discovery activity aangepast, zodanig dat dubbele entries niet meer worden getoond. Discovery wordt nu in een apparte thread uitgevoerd. Ik had ook code geschreven om entries na een bepaalde tijd uit de ArrayAdapter te verwijderen. Na veel moeite gelukt maar deze functie was uiteindelijk niet nodig. Dus de code heb ik verwijderd. Er is namelijk gekozen om de gehele lijst te wissen nadat discovery is afgerond.
 
 \subsection*{Vrijdag}
-
+Verder gewerkt aan het onderling verbinden van telefoons met bluetooth. Veel problemen tegengekomen. Discovery werkte ineens niet meer goed. Het paren van telefoons mislukte telkens. Af en toe werkte het beter door de telefoons opnieuw op te starten. Testen en debuggen duurt erg lang allemaal. Uiteindelijk nog niet helemaal gelukt om 4 telefoons met elkaar te laten connecten. Knop voor server/client switch aangemaakt en later verwijderd. Altijd discovery aangezet, knop voor discovery verwijderd. Altijd connecten met devices met als naam Project Thunder.
 
 \section*{Week 2}
 \subsection*{Maandag}
+Geprobeerd een oplossing te vinden voor de problemen die ik vrijdag was tegengekomen. Niet gelukt, telefoons weigerde om met meer dan 1 andere telefoon te pairen. Vervolgens een library geprobeerd, dit mislukte ook. Vervolgens de oude code weer hersteld en dingen aangepast. Samen met Mustafa weer vanaf nul begonnen.
+
 \subsection*{Dinsdag}
-Werken aan bluetooth implementatie. Het experimenteren met de telefoons. Kijken hoe lang het duurt voordat telefoons met elkaar zijn verbonden. Heel veel problemen gehad. Vaak moeten alle telefoons opnieuw worden opgestart. Er is gebleken dat meer dan 2 connecties in de praktijk niet mogelijk is.
+Werken aan bluetooth implementatie met Mustafa. Het experimenteren met de telefoons. Kijken hoe lang het duurt voordat telefoons met elkaar zijn verbonden. Heel veel problemen gehad. Vaak moeten alle telefoons opnieuw worden opgestart. Er is gebleken dat meer dan 2 connecties in de praktijk niet mogelijk is.
 
 \subsection*{Woensdag}
 Mergen van de oude bluetooth implementatie en het opschonen van de nieuwe implementatie. De client/server code in de activity verplaatst naar een apparte class. Vervolgens ge\"implementeerd dat er berichten ontvangen en verstuurd kunnen worden.
