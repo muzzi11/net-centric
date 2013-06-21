@@ -1,2 +1,5 @@
 ProjectBat/bin
 .metadata/
+*.aux
+*.log
+*.synctex.gz
