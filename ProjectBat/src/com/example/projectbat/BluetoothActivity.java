@@ -129,7 +129,8 @@ public class BluetoothActivity extends Activity implements BluetoothInterface
         {       	
             public void onClick(View v) 
             {
-            	btService.broadcastMessage("Hello");            	
+            	Log.i("Bluetooth", "Start discovering");
+        		btAdapter.startDiscovery(); 	
             }
         });      
 	}	
@@ -139,10 +140,7 @@ public class BluetoothActivity extends Activity implements BluetoothInterface
 	{
 		super.onStart();
 		
-		btService.start();
-		
-		Log.i("Bluetooth", "Start discovering");
-		btAdapter.startDiscovery();		
+		btService.start();		
 	}
 	
 	@Override

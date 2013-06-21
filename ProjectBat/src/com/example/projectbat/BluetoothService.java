@@ -33,6 +33,9 @@ public class BluetoothService
 	
 	private final UUID uuid = UUID.fromString("04c6093b-0000-1000-8000-00805f9b34fb");
 	
+	private static final String btEchoSend = "BtEchoSend";
+	private static final String btEchoRecv = "BtEchoRecv";
+	
 	public BluetoothService(BluetoothInterface ie)
 	{
 		btInterface = ie;
@@ -148,6 +151,15 @@ public class BluetoothService
         }
 	}
 	
+	public void findShortestPath()
+	{
+		Log.d("Bluetooth", "Start looking for shortest path");
+		for (Connection con : connections.values())
+        {			
+			con.write();
+        }
+	}
+	
 	private class AcceptThread implements Runnable
 	{	
 		public void run()
@@ -249,7 +261,7 @@ public class BluetoothService
 		            try { bytes = inStream.read(buffer); } catch (IOException e) { break; }
 		            
 		            if (bytes > 0)
-		            {
+		            {		            	
 		            	String text = null;
 		            	try { text = new String(buffer, "UTF-8"); } catch (UnsupportedEncodingException e) { e.printStackTrace(); }
 					
