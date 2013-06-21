@@ -7,7 +7,8 @@ import android.util.Log;
 
 public class BeepGenerator
 {
-	private final short buffer[] = new short[100];
+	public static final int beepPeriod = 10;
+	private final short buffer[] = new short[200];
 	private final int sampleRate;
 	private final AudioTrack track;
 	
@@ -22,7 +23,7 @@ public class BeepGenerator
 		
 		for(int i = 0; i < buffer.length; ++i)
 		{
-			buffer[i] = (short) (Math.sin(i * 2.0 * Math.PI / 10.0) * Short.MAX_VALUE);
+			buffer[i] = (short) (Math.sin(i * 2.0 * Math.PI / beepPeriod) * Short.MAX_VALUE);
 		}
 		
 		track.write(buffer, 0, buffer.length);
@@ -36,5 +37,17 @@ public class BeepGenerator
 			Log.e("BeepGenerator", "reload static data failed.");
 		}
 		track.play();
+	}
+	
+	static public float[] generateSignal(int samples)
+	{
+		float[] signal = new float[samples];
+		
+		for(int i = 0; i < samples; ++i)
+		{
+			signal[i] = (float) Math.sin(i * 2.0 * Math.PI / beepPeriod);
+		}
+		
+		return signal;
 	}
 }

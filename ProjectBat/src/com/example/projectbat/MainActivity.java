@@ -1,8 +1,5 @@
 package com.example.projectbat;
 
-import java.util.Timer;
-import java.util.TimerTask;
-
 import com.example.projectbat.R;
 
 import android.os.Bundle;
@@ -17,7 +14,6 @@ public class MainActivity extends Activity
 {	
 	private static BeepGenerator beepGenerator;
 	private static StreamingRecorder streamingRecorder;
-	private static Timer timer;
 
 	
     @Override
@@ -28,33 +24,29 @@ public class MainActivity extends Activity
         
         beepGenerator = new BeepGenerator();
         streamingRecorder = new StreamingRecorder();
+        Thread t = new Thread(new BeepDetector(streamingRecorder));
+        t.setDaemon(true);
+        t.start();
         
         final Button beepButton = (Button)findViewById(R.id.beep);
         beepButton.setOnClickListener(new OnClickListener()
         {
         	public void onClick(View v)
         	{
-        		timer = new Timer(true);
-        		MainActivity.streamingRecorder.start();
+        		//MainActivity.streamingRecorder.start();
         		MainActivity.beepGenerator.play();
-        		
-        		timer.schedule(new TimerTask()
-        		{
-        			@Override
-        			public void run()
-        			{
-        				short[] buffer = new short[11025];
-        				MainActivity.streamingRecorder.read(buffer, buffer.length);
-        				MainActivity.streamingRecorder.stop();
-        				
-            			Bundle extra = new Bundle();
-            			extra.putShortArray("data", buffer);
-            			
-            			Intent intent = new Intent(MainActivity.this, HistogramActivity.class);
-            			intent.putExtras(extra);
-            			startActivity(intent);
-        			}
-        		}, 100);
+        		/*
+        		short[] buffer = new short[11025];
+				MainActivity.streamingRecorder.read(buffer, buffer.length);
+				MainActivity.streamingRecorder.stop();
+				
+    			Bundle extra = new Bundle();
+    			extra.putShortArray("data", buffer);
+    			
+    			Intent intent = new Intent(MainActivity.this, HistogramActivity.class);
+    			intent.putExtras(extra);
+    			startActivity(intent);
+    			*/
         	}
         });
         
@@ -68,7 +60,14 @@ public class MainActivity extends Activity
             	startActivity(intent);
             }
         });      
-    }    
+    }
+    
+    @Override
+    protected void onDestroy()
+    {
+    	super.onDestroy();
+    	streamingRecorder.stop();
+    }
         
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

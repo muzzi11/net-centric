@@ -29,21 +29,21 @@ public class HistogramActivity extends Activity
 		Bundle extra = getIntent().getExtras();
 		short data[] = extra.getShortArray("data");
 		
-		float fft[] = new float[data.length];
-		for(int i = 0; i < fft.length; ++i)
+		float fft[] = new float[2*data.length];
+		for(int i = 0; i < data.length; ++i)
 		{
 			fft[i] = data[i] / (float) Short.MAX_VALUE;
 		}
 		
-		FloatFFT_1D floatFFT = new FloatFFT_1D(fft.length);
-		floatFFT.realForward(fft);
+		FloatFFT_1D floatFFT = new FloatFFT_1D(data.length);
+		floatFFT.realForwardFull(fft);
 		
 		// Create a couple arrays of y-values to plot:
-        Number[] numbers = new Number[fft.length / 10];
-        final int targetFrequency = 4410;
-        for(int i = 0; i < numbers.length; ++i)
+        Number[] numbers = new Number[data.length / 10];
+        for(int i = 0; i < numbers.length; i += 2)
         {
-        	numbers[i] = fft[fft.length * targetFrequency / 44100 - numbers.length / 2 + i];
+        	final int n = fft.length / BeepGenerator.beepPeriod - numbers.length / 2 + i + 1;
+        	numbers[i] = Math.sqrt(fft[n]*fft[n] + fft[n+1]*fft[n+1]);
         }
         
         XYSeries serie = new SimpleXYSeries(Arrays.asList(numbers), SimpleXYSeries.ArrayFormat.Y_VALS_ONLY, "FFT");
