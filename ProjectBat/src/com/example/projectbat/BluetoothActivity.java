@@ -43,8 +43,7 @@ public class BluetoothActivity extends Activity implements BluetoothInterface
 	            final BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 	            final String name = device.getName();
 	            final String address = device.getAddress();
-	            
-	            //if( name.equals("projectThunder") && !foundDevices.contains(device) ) foundDevices.add(device);            	
+	                        	
 	            if (name.equals("projectThunder") && !addresses.contains(address) )
 	            {
 	            	foundDevices.add(device);
@@ -57,12 +56,11 @@ public class BluetoothActivity extends Activity implements BluetoothInterface
 	        	
 	        	if (foundDevices.isEmpty())	        	
 	        		btAdapter.startDiscovery();	        	
-	        	else	        	      
-	        		if ( !btService.connect( foundDevices.get(0) ) )
-	        		{
-	        			foundDevices.clear();
-	        			btAdapter.startDiscovery();
-	        		}
+	        	else if ( !btService.connect( foundDevices.get(0) ) )
+        		{
+        			foundDevices.clear();
+        			btAdapter.startDiscovery();
+        		}
 	        }
 	    }
 	};
@@ -134,9 +132,12 @@ public class BluetoothActivity extends Activity implements BluetoothInterface
 		TextView macAddress = (TextView)findViewById(R.id.macAddress);
 		macAddress.setText("Own: " + btAdapter.getAddress());
 		
-		Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
-		discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 0);
-		startActivityForResult(discoverableIntent, REQUEST_DISCOVERABLE);
+		if(btAdapter.getScanMode() != BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE)
+		{
+			Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
+			discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 0);
+			startActivityForResult(discoverableIntent, REQUEST_DISCOVERABLE);
+		}
 				
 		// Register the BroadcastReceiver
 		final IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
@@ -172,7 +173,7 @@ public class BluetoothActivity extends Activity implements BluetoothInterface
 			Log.e("Bluetooth", "Request to enable BT has been denied.");
 			finish();
 		}
-		if(REQUEST_DISCOVERABLE == requestCode && resultCode == RESULT_CANCELED)
+		if(requestCode == REQUEST_DISCOVERABLE && resultCode == RESULT_CANCELED)
 		{
 			Log.e("Bluetooth", "Request to activate discoverability has been denied.");
 			finish();
@@ -184,8 +185,7 @@ public class BluetoothActivity extends Activity implements BluetoothInterface
 	{
 		super.onDestroy();
 		
-		unregisterReceiver(receiver);
-		
+		unregisterReceiver(receiver);		
 		btService.stop();	
 	}
 

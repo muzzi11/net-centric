@@ -33,8 +33,8 @@ public class BluetoothService
 	private final Map<String, BluetoothSocket> sockets = new HashMap<String, BluetoothSocket>();
 	private final Map<String, BluetoothSocket> redundantSockets = new HashMap<String, BluetoothSocket>();
 	
-	private Map<String, Connection> connections = new HashMap<String, Connection>(); 
-	private ArrayList<String> addresses = new ArrayList<String>();
+	private final Map<String, Connection> connections = new HashMap<String, Connection>(); 
+	private final ArrayList<String> addresses = new ArrayList<String>();
 	
 	private Thread acceptThread = null;	
 	
@@ -87,25 +87,16 @@ public class BluetoothService
     	btAdapter.cancelDiscovery();
     	
     	BluetoothSocket btSocket = null;
-    	try
-    	{
-			btSocket = device.createInsecureRfcommSocketToServiceRecord(uuid);
-		}
-    	catch (IOException e)
-		{
-			Log.e("Bluetooth", e.getMessage());
-		}
+    	try { btSocket = device.createInsecureRfcommSocketToServiceRecord(uuid); }
+    	catch (IOException e) { Log.e("Bluetooth", e.getMessage()); }
     	
     	if(btSocket != null)
     	{
-    		try
-    		{
-				btSocket.connect();
-			}
+    		try { btSocket.connect(); }
     		catch (IOException e)
     		{
-    			try{ btSocket.close(); }
-    			catch(IOException e1){ Log.e("Bluetooth", e1.getMessage()); }
+    			try { btSocket.close(); }
+    			catch(IOException e1) { Log.e("Bluetooth", e1.getMessage()); }
     			
     			Log.e("Bluetooth", e.getMessage());
 			}
@@ -150,8 +141,8 @@ public class BluetoothService
 				BluetoothSocket btSocket = null;
 				
 				Log.i("Bluetooth", "Accepting sheezy my neezy");
-				try{ btSocket = btServerSocket.accept(); }
-				catch(IOException e){ Log.e("Bluetooth", e.getMessage()); return;}
+				try { btSocket = btServerSocket.accept(); }
+				catch(IOException e) { Log.e("Bluetooth", e.getMessage()); return; }
 				
 				if(btSocket != null)
 				{
@@ -169,10 +160,8 @@ public class BluetoothService
 						acceptingSucceeded(remoteDevice);
 						btInterface.addPairedDevice(address);						
 					}
-					else if( !redundantSockets.containsKey(address))
-					{
-						redundantSockets.put(address, btSocket);
-					}				
+					else if( !redundantSockets.containsKey(address))					
+						redundantSockets.put(address, btSocket);									
 				}
 			}						
 		}
@@ -181,32 +170,30 @@ public class BluetoothService
 	private void connectingSucceeded(BluetoothDevice device)
 	{		
 		String address = device.getAddress();
-		
-		btInterface.displayMessage("Connecting succeeded, sending addresses");		
-		btInterface.addPairedDevice(address);
-		
 		addresses.add(address);
 		
+		btInterface.updateDevices(addresses);		
+		btInterface.displayMessage("Connecting succeeded, sending addresses");		
+		btInterface.addPairedDevice(address);		
+		
+		// Notify parent of new node in the network
 		if (parent != null)			
 			parent.sendString(address, addressMsgID);
 		
+		// Send the child the current known addresses in the network
 		child = connections.get(device.getAddress());
-		child.sendObject(addresses, arrayListMsgID);
-		btInterface.updateDevices(addresses);
+		child.sendObject(addresses, arrayListMsgID);		
 	}
 	
 	private void acceptingSucceeded(BluetoothDevice device)
 	{
-		btInterface.displayMessage("Accepting succeeded, adding address");
-		
 		String address = device.getAddress();
-		
-		parent = connections.get(address);
 		addresses.add(address);
 		
-		linkBuilding();
-		
 		btInterface.updateDevices(addresses);
+		btInterface.displayMessage("Accepting succeeded, adding address");	
+		
+		parent = connections.get(address);	
 	}
 	
 	public void broadcastMessage(String message)
@@ -220,12 +207,12 @@ public class BluetoothService
 
 	private class Connection 
 	{
-		private BluetoothSocket socket;
+		private final BluetoothSocket socket;
 		
 		private final InputStream inStream;
 	    private final OutputStream outStream;
 	 
-	    Thread connectedThread;
+	    private final Thread connectedThread;
 	    
 		public Connection(BluetoothSocket s)
 		{			
@@ -270,7 +257,7 @@ public class BluetoothService
 			bytes = bos.toByteArray();
 			
 	        try { outStream.write(bytes); }
-	        catch (IOException e) {}
+	        catch (IOException e) { e.printStackTrace(); }
 	    }
 		
 		public void sendBytes(byte[] buffer)
@@ -283,6 +270,7 @@ public class BluetoothService
 		{
 			ByteArrayOutputStream bos = new ByteArrayOutputStream();
 			ObjectOutput out = null;
+			
 			try 
 			{
 				out = new ObjectOutputStream(bos);
@@ -314,6 +302,7 @@ public class BluetoothService
 		            if (size > 0)
 		            {		           
 		            	byte id = buffer[size - 1];
+		            	
 		            	if (id == arrayListMsgID)
 		            	{
 		            		parseArrayList(buffer, size);
@@ -333,8 +322,10 @@ public class BluetoothService
 			private void parseArrayList(byte[] buffer, int size)
 			{
 				btInterface.displayMessage("Received arrayList");
+				
 				ByteArrayInputStream bis = new ByteArrayInputStream(buffer, 0, size -1);			            	
             	ObjectInput in = null;
+            	
             	try 
             	{
             	  in = new ObjectInputStream(bis);
@@ -345,13 +336,15 @@ public class BluetoothService
             	catch (ClassNotFoundException e) { e.printStackTrace(); }
             	finally 
             	{
-            	  try {
+            	  try 
+            	  {
 					bis.close();
 					in.close();
             	  } catch (IOException e) { e.printStackTrace(); }			            	  
             	}
             	
             	btInterface.updateDevices(addresses);
+            	linkBuilding();
 			}
 			
 			private void parseAddress(byte[] buffer, int size)
@@ -362,12 +355,12 @@ public class BluetoothService
             	try { address = new String(buffer, 0, size - 1, "UTF-8"); }
             	catch (UnsupportedEncodingException e) { e.printStackTrace(); }
             	
-            	addresses.add(address);
+            	addresses.add(address);            	
+            	btInterface.updateDevices(addresses);
             	
+            	// Send new address to parent if applicable
             	if (parent != null)
             		parent.sendString(address, addressMsgID);            	
-            	
-            	btInterface.updateDevices(addresses);
 			}
 			
 			private void parseString(byte[] buffer, int size)
