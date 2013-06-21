@@ -1,9 +1,16 @@
 package com.example.projectbat;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -20,21 +27,22 @@ public class BluetoothService
 	private final BluetoothInterface btInterface;
 	BluetoothServerSocket btServerSocket = null;
 	
-	private BluetoothDevice parent;
-	private BluetoothDevice child;
+	private Connection parent = null;
+	private Connection child;
 	
 	private final Map<String, BluetoothSocket> sockets = new HashMap<String, BluetoothSocket>();
 	private final Map<String, BluetoothSocket> redundantSockets = new HashMap<String, BluetoothSocket>();
 	
 	private Map<String, Connection> connections = new HashMap<String, Connection>(); 
-	private Map<String, Float> timings = new HashMap<String, Float>();
+	private ArrayList<String> addresses = new ArrayList<String>();
 	
 	private Thread acceptThread = null;	
 	
 	private final UUID uuid = UUID.fromString("04c6093b-0000-1000-8000-00805f9b34fb");
 	
-	private static final String btEchoSend = "BtEchoSend";
-	private static final String btEchoRecv = "BtEchoRecv";
+	private final byte arrayListMsgID = 0x0;
+	private final byte addressMsgID = 0x4;
+	private final byte stringMsgID = 0x8;
 	
 	public BluetoothService(BluetoothInterface ie)
 	{
@@ -47,36 +55,11 @@ public class BluetoothService
 		Log.d("Bluetooth", "Service started");
 		          
         acceptThread = new Thread(new AcceptThread());
+        acceptThread.setDaemon(true);
         acceptThread.start();        	
 	}
 	
 	public synchronized void stop()
-	{
-		/*
-		if (connectThread != null) 
-        {
-			connectThread.cancel();
-            connectThread = null;
-        }*/
-		
-        if (connections.isEmpty()) 
-        {
-            for (Connection con : connections.values())
-            {
-            	con.connectedThread.interrupt();
-            	con = null;
-            }            	
-        }
-        if (acceptThread != null) 
-        {
-          acceptThread.interrupt();
-          acceptThread = null;
-        }		
-        
-        closeSockets();
-	}
-	
-	private void closeSockets()
 	{
 		try{ btServerSocket.close(); }
 		catch(IOException e){ Log.e("Bluetooth", e.getMessage()); }
@@ -90,10 +73,16 @@ public class BluetoothService
 		{
 			try{ btSocket.close(); }
 			catch(IOException e){ Log.e("Bluetooth", e.getMessage()); }
-		}
+		}		
 	}
 	
-	public void connect(BluetoothDevice device)
+	public void linkBuilding()
+	{	
+		btInterface.displayMessage("Starting discovery");
+		btAdapter.startDiscovery();
+	}
+	
+	public boolean connect(BluetoothDevice device)
 	{        
     	btAdapter.cancelDiscovery();
     	
@@ -129,37 +118,19 @@ public class BluetoothService
     			
 				if( !sockets.containsKey(address) )
 				{					
-					connections.put(address, new Connection(btSocket));
+					Connection con = new Connection(btSocket);
+					connections.put(address, con);				
 					
-					sockets.put(address, btSocket);
-					btInterface.pairedDevice(address);				
+					sockets.put(address, btSocket);				
+					connectingSucceeded(device);
+					return true;
 				}
-			}		            			
+			}     			
     	}
-    	else
-    	{
-    		Log.e("Bluetooth", "Failed to get socket.");
-    	}        	
-	}	
-	
-	public void broadcastMessage(String message)
-	{
-		Log.d("Bluetooth", "Active connections: " + connections.size());
-		for (Connection con : connections.values())
-        {			
-			con.write(message);
-        }
+    	Log.e("Bluetooth", "Failed to connect.");
+    	return false;
 	}
-	
-	public void findShortestPath()
-	{
-		Log.d("Bluetooth", "Start looking for shortest path");
-		for (Connection con : connections.values())
-        {			
-			con.write();
-        }
-	}
-	
+		
 	private class AcceptThread implements Runnable
 	{	
 		public void run()
@@ -174,27 +145,29 @@ public class BluetoothService
 				btInterface.exit();
 			}
 			
-			while( !Thread.currentThread().isInterrupted() )
+			while(true)
 			{
 				BluetoothSocket btSocket = null;
 				
 				Log.i("Bluetooth", "Accepting sheezy my neezy");
 				try{ btSocket = btServerSocket.accept(); }
-				catch(IOException e){ Log.e("Bluetooth", e.getMessage()); }
+				catch(IOException e){ Log.e("Bluetooth", e.getMessage()); return;}
 				
 				if(btSocket != null)
 				{
 					Log.i("Bluetooth", "CONNECTED GEEZY");
 					
 					final BluetoothDevice remoteDevice = btSocket.getRemoteDevice();
-					final String address = remoteDevice.getAddress();
+					final String address = remoteDevice.getAddress();					
 					
 					if( !sockets.containsKey(address) )
 					{						
-						connections.put(address, new Connection(btSocket));				
+						Connection con = new Connection(btSocket);						
+						connections.put(address, con);						
+						sockets.put(address, btSocket);
 						
-						sockets.put(address, btSocket);				
-						btInterface.pairedDevice(address);						
+						acceptingSucceeded(remoteDevice);
+						btInterface.addPairedDevice(address);						
 					}
 					else if( !redundantSockets.containsKey(address))
 					{
@@ -203,6 +176,46 @@ public class BluetoothService
 				}
 			}						
 		}
+	}
+		
+	private void connectingSucceeded(BluetoothDevice device)
+	{		
+		String address = device.getAddress();
+		
+		btInterface.displayMessage("Connecting succeeded, sending addresses");		
+		btInterface.addPairedDevice(address);
+		
+		addresses.add(address);
+		
+		if (parent != null)			
+			parent.sendString(address, addressMsgID);
+		
+		child = connections.get(device.getAddress());
+		child.sendObject(addresses, arrayListMsgID);
+		btInterface.updateDevices(addresses);
+	}
+	
+	private void acceptingSucceeded(BluetoothDevice device)
+	{
+		btInterface.displayMessage("Accepting succeeded, adding address");
+		
+		String address = device.getAddress();
+		
+		parent = connections.get(address);
+		addresses.add(address);
+		
+		linkBuilding();
+		
+		btInterface.updateDevices(addresses);
+	}
+	
+	public void broadcastMessage(String message)
+	{
+		Log.d("Bluetooth", "Active connections: " + connections.size());
+		for (Connection con : connections.values())
+        {			
+			con.sendString(message, stringMsgID);
+        }
 	}
 
 	private class Connection 
@@ -239,36 +252,134 @@ public class BluetoothService
 			connectedThread.start();
 		}
 		
-		public void write(String s) 
+		public void sendString(String s, byte msgID) 
 	    {
 			byte[] bytes = null;
 			
 			try { bytes = s.getBytes("UTF-8"); } 
 			catch (UnsupportedEncodingException e) { e.printStackTrace(); }
 			
-	        try { outStream.write(bytes); } catch (IOException e) {}
+			ByteArrayOutputStream bos = new ByteArrayOutputStream( );
+			try 
+			{
+				bos.write(bytes);
+				bos.write(msgID);
+			}
+			catch (IOException e) { e.printStackTrace(); }			
+			
+			bytes = bos.toByteArray();
+			
+	        try { outStream.write(bytes); }
+	        catch (IOException e) {}
 	    }
+		
+		public void sendBytes(byte[] buffer)
+		{
+			try { outStream.write(buffer); } 
+			catch (IOException e) { e.printStackTrace(); }
+		}
+		
+		public void sendObject(Object obj, byte msgID)
+		{
+			ByteArrayOutputStream bos = new ByteArrayOutputStream();
+			ObjectOutput out = null;
+			try 
+			{
+				out = new ObjectOutputStream(bos);
+			    out.writeObject(obj);
+			    out.writeByte(msgID);
+			    
+			    byte[] bytes = bos.toByteArray();
+			    sendBytes(bytes);
+			} 
+			catch (IOException e) { e.printStackTrace(); }
+			finally 
+			{
+				try { out.close(); bos.close(); }
+				catch (IOException e) { e.printStackTrace(); }		  
+			}
+		}
 		
 		private class ConnectionThread implements Runnable
 		{
 			public void run() 
 			{
 				byte[] buffer = new byte[1024];
-		        int bytes;
+		        int size;
 		        
-				while( !Thread.currentThread().isInterrupted() )
+				while( true )
 				{
-		            try { bytes = inStream.read(buffer); } catch (IOException e) { break; }
+		            try { size = inStream.read(buffer); } catch (IOException e) { break; }
 		            
-		            if (bytes > 0)
-		            {		            	
-		            	String text = null;
-		            	try { text = new String(buffer, "UTF-8"); } catch (UnsupportedEncodingException e) { e.printStackTrace(); }
-					
-		            	btInterface.displayMessage(text);
+		            if (size > 0)
+		            {		           
+		            	byte id = buffer[size - 1];
+		            	if (id == arrayListMsgID)
+		            	{
+		            		parseArrayList(buffer, size);
+		            	}
+		            	else if (id == addressMsgID)
+		            	{
+		            		parseAddress(buffer, size);
+		            	}		            	
+		            	else if (id == stringMsgID)
+		            	{
+			            	parseString(buffer, size);
+		            	}
 		            }
 				}
 			}
+			
+			private void parseArrayList(byte[] buffer, int size)
+			{
+				btInterface.displayMessage("Received arrayList");
+				ByteArrayInputStream bis = new ByteArrayInputStream(buffer, 0, size -1);			            	
+            	ObjectInput in = null;
+            	try 
+            	{
+            	  in = new ObjectInputStream(bis);
+            	  Object o = in.readObject();			            	  
+            	  addresses.addAll((ArrayList<String>) o);
+            	}
+            	catch (IOException e) { e.printStackTrace(); }
+            	catch (ClassNotFoundException e) { e.printStackTrace(); }
+            	finally 
+            	{
+            	  try {
+					bis.close();
+					in.close();
+            	  } catch (IOException e) { e.printStackTrace(); }			            	  
+            	}
+            	
+            	btInterface.updateDevices(addresses);
+			}
+			
+			private void parseAddress(byte[] buffer, int size)
+			{
+				btInterface.displayMessage("Received address");
+				String address = null;
+            	
+            	try { address = new String(buffer, 0, size - 1, "UTF-8"); }
+            	catch (UnsupportedEncodingException e) { e.printStackTrace(); }
+            	
+            	addresses.add(address);
+            	
+            	if (parent != null)
+            		parent.sendString(address, addressMsgID);            	
+            	
+            	btInterface.updateDevices(addresses);
+			}
+			
+			private void parseString(byte[] buffer, int size)
+			{
+				btInterface.displayMessage("Received string");
+				String text = null;
+            	
+            	try { text = new String(buffer, 0, size - 1, "UTF-8"); }
+            	catch (UnsupportedEncodingException e) { e.printStackTrace(); }
+            	
+            	btInterface.displayMessage(text);
+			}
 		}	    	    
-	}
+	}	
 }
