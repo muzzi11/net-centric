@@ -1,7 +1,9 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/LinearLayout1"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     android:paddingBottom="@dimen/activity_vertical_margin"
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
@@ -12,34 +14,43 @@
         android:id="@+id/macAddress"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/connectionList"
-        android:layout_alignParentTop="true"
-        android:layout_alignRight="@+id/connectionList"
-        android:text="TextView" />
+        android:text="My mac address" />
 
     <TextView
         android:id="@+id/receivedMsg"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/connectionList"
-        android:layout_below="@+id/macAddress"
-        android:text="TextView" />
+        android:text="Receive message" />
+
+    <TextView
+        android:id="@+id/textView1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Connected devices:" />
 
     <ListView
         android:id="@+id/connectionList"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/button1"
-        android:layout_below="@+id/receivedMsg" >
+        android:layout_height="126dp" >
+    </ListView>
 
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Devices in network:" />
+
+    <ListView
+        android:id="@+id/networkList"
+        android:layout_width="match_parent"
+        android:layout_height="134dp"
+        android:layout_weight="0.92" >
     </ListView>
 
     <Button
         android:id="@+id/startDiscovery"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
         android:text="Start Discovery" />
 
-</RelativeLayout>
+</LinearLayout>
