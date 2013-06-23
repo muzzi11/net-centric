@@ -37,14 +37,14 @@ public class BluetoothActivity extends Activity implements BluetoothInterface
 		public void onReceive(Context context, Intent intent) {
 			final String action = intent.getAction();
 
-			if (BluetoothDevice.ACTION_FOUND.equals(action))
+			if ( BluetoothDevice.ACTION_FOUND.equals(action) )
 			{
 				// Get the BluetoothDevice object from the Intent
 				final BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 				final String name = device.getName();
 				final String address = device.getAddress();
 
-				if (name.equals("projectThunder") && !addresses.contains(address) )
+				if ( name.equals("projectThunder") && !addresses.contains(address) )
 				{
 					foundDevices.add(device);
 					btAdapter.cancelDiscovery();
@@ -54,7 +54,7 @@ public class BluetoothActivity extends Activity implements BluetoothInterface
 			{	        	
 				Log.i("Bluetooth", "Discovery finished");
 
-				if (foundDevices.isEmpty())	        	
+				if ( foundDevices.isEmpty() )	        	
 					btAdapter.startDiscovery();	        	
 				else if ( !btService.connect( foundDevices.get(0) ) )
 				{
