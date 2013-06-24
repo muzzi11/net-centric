@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import android.os.Bundle;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -72,8 +71,7 @@ public class BluetoothActivity extends Activity implements BluetoothInterface
 			}
 		}
 	};
-
-	// Interface functions	
+	
 	public void addPairedDevice(final String address)
 	{
 		BluetoothActivity.this.runOnUiThread(new Runnable()
