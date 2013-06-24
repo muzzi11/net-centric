@@ -224,7 +224,7 @@ public class BluetoothService
 				tmpOut = socket.getOutputStream();
 			}
 			catch (IOException e) 
-			{ 
+			{
 				Log.e("Bluetooth", "Failed to create i/o streams.", e);
 				btInterface.exit();
 			}			
@@ -360,7 +360,7 @@ public class BluetoothService
 			public void run() 
 			{
 				byte[] buffer = new byte[1024];
-				int size;
+				int size = 0;
 
 				while( true )
 				{
