@@ -34,7 +34,7 @@ public class BluetoothActivity extends Activity implements BluetoothInterface
 	private ArrayAdapter<String> pairedAdapter;
 	private ArrayAdapter<String> addressAdapter;
 	
-	
+	private int discoveryCounter = 0;
 
 	private final BroadcastReceiver receiver = new BroadcastReceiver() {
 		public void onReceive(Context context, Intent intent) {
@@ -62,7 +62,18 @@ public class BluetoothActivity extends Activity implements BluetoothInterface
 				else if ( !btService.connect( foundDevices.get(0) ) )
 				{
 					foundDevices.clear();
-					btAdapter.startDiscovery();
+					
+					if (discoveryCounter < MAX_DISCOVERIES)
+						btAdapter.startDiscovery();
+					else
+					{
+						btService.linkBuildingHandlers.linkBuildingFinished();
+						
+						// connection has been established, turn off discoverability
+						Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
+						discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 1);
+						startActivity(discoverableIntent);
+					}
 				}
 				else
 				{
@@ -159,7 +170,7 @@ public class BluetoothActivity extends Activity implements BluetoothInterface
 			public void onClick(View v) 
 			{            	
 				discoveryButton.setText("Discovery Started");
-				btService.linkBuilding();
+				btService.linkBuildingHandlers.linkBuilding();
 			}
 		});      
 	}	
