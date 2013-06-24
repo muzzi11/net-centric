@@ -84,11 +84,12 @@ public class BluetoothService
 
 	private void connectingSucceeded(BluetoothDevice device)
 	{		
+		btInterface.displayMessage("Connecting succeeded, sending addresses");
+		
 		String address = device.getAddress();
 		addresses.add(address);
 
 		btInterface.updateDevices(addresses);		
-		btInterface.displayMessage("Connecting succeeded, sending addresses");		
 		btInterface.addPairedDevice(address);		
 
 		// Notify parent of new node in the network
