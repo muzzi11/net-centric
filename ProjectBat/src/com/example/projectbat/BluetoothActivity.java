@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import android.os.Bundle;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -41,7 +42,7 @@ public class BluetoothActivity extends Activity implements BluetoothInterface
 			{
 				// Get the BluetoothDevice object from the Intent
 				final BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-				final String name = device.getName();
+				final String name = device.getName() == null ? "" : device.getName(); // derp
 				final String address = device.getAddress();
 
 				if ( name.equals("projectThunder") && !addresses.contains(address) )
@@ -60,6 +61,13 @@ public class BluetoothActivity extends Activity implements BluetoothInterface
 				{
 					foundDevices.clear();
 					btAdapter.startDiscovery();
+				}
+				else
+				{
+					// connection has been established, turn off discoverability
+					Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
+					discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 1);
+					startActivity(discoverableIntent);
 				}
 			}
 		}
