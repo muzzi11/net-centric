@@ -28,7 +28,7 @@ public class BluetoothService
 	BluetoothServerSocket btServerSocket = null;
 
 	private Connection parent = null;
-	private Connection child;
+	private Connection child = null;
 
 	private final Map<String, BluetoothSocket> sockets = new HashMap<String, BluetoothSocket>();
 	private final Map<String, BluetoothSocket> redundantSockets = new HashMap<String, BluetoothSocket>();
@@ -42,7 +42,7 @@ public class BluetoothService
 
 	private final byte arrayListMsgID = 0x2;
 	private final byte addressMsgID = 0x4;
-	private final byte stringMsgID = 0x8;
+	private final byte broadcastMsgID = 0x8;
 
 	public BluetoothService(BluetoothInterface ie)
 	{
@@ -53,7 +53,7 @@ public class BluetoothService
 	public synchronized void start()
 	{
 		Log.d("Bluetooth", "Service started");
-
+		
 		acceptThread = new Thread(new AcceptThread());
 		acceptThread.setDaemon(true);
 		acceptThread.start();        	
@@ -78,6 +78,7 @@ public class BluetoothService
 
 	public void linkBuilding()
 	{	
+		addresses.add(btAdapter.getAddress());
 		btInterface.displayMessage("Starting discovery");
 		btAdapter.startDiscovery();
 	}
@@ -91,11 +92,12 @@ public class BluetoothService
 			parent.sendString(address, addressMsgID);
 
 		// Send the child the current known addresses in the network
+		addresses.add(address);
 		child = connections.get(device.getAddress());
 		child.sendObject(addresses, arrayListMsgID);
 		
 		// Add the childs address to your own address database
-		addresses.add(address);
+		
 		
 		btInterface.displayMessage("Connecting succeeded, sending addresses");
 		btInterface.updateDevices(addresses);		
@@ -104,8 +106,7 @@ public class BluetoothService
 
 	private void acceptingSucceeded(BluetoothDevice device)
 	{
-		String address = device.getAddress();
-		addresses.add(address);
+		String address = device.getAddress();		
 		parent = connections.get(address);	
 		
 		btInterface.displayMessage("Accepting succeeded, adding address");
@@ -116,10 +117,8 @@ public class BluetoothService
 	public void broadcastMessage(String message)
 	{
 		Log.d("Bluetooth", "Active connections: " + connections.size());
-		for (Connection con : connections.values())
-		{			
-			con.sendString(message, stringMsgID);
-		}
+		for (Connection con : connections.values())					
+			con.sendString(message, broadcastMsgID);		
 	}
 	
 	public boolean connect(BluetoothDevice device)
@@ -329,7 +328,8 @@ public class BluetoothService
 						}
 		
 						btInterface.updateDevices(addresses);
-						linkBuilding();
+						btInterface.displayMessage("Starting discovery");
+						btAdapter.startDiscovery();
 					}
 				});
 				
@@ -352,7 +352,7 @@ public class BluetoothService
 					}
 				});
 				
-				parserMap.put(stringMsgID, new Parser()
+				parserMap.put(broadcastMsgID, new Parser()
 				{
 					public void parse(byte[] buffer, int size)
 					{
@@ -363,6 +363,18 @@ public class BluetoothService
 						catch (UnsupportedEncodingException e) { e.printStackTrace(); }
 
 						btInterface.displayMessage(text);
+						
+						for(Map.Entry<String, BluetoothSocket> e : sockets.entrySet())
+						{
+							final String key = e.getKey();
+							final BluetoothSocket sock = e.getValue();
+							
+							if (sock != socket)
+							{
+								Connection con = connections.get(key);
+								con.sendString(text, broadcastMsgID);
+							}								
+						}								
 					}
 				});
 			}

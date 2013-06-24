@@ -22,7 +22,8 @@ public class BluetoothActivity extends Activity implements BluetoothInterface
 {
 	private static final int REQUEST_ENABLE_BT = 1;
 	private static final int REQUEST_DISCOVERABLE = 2;
-
+	private static final int MAX_DISCOVERIES = 5;
+	
 	private BluetoothAdapter btAdapter;	
 	private BluetoothService btService;
 
@@ -32,6 +33,8 @@ public class BluetoothActivity extends Activity implements BluetoothInterface
 
 	private ArrayAdapter<String> pairedAdapter;
 	private ArrayAdapter<String> addressAdapter;
+	
+	
 
 	private final BroadcastReceiver receiver = new BroadcastReceiver() {
 		public void onReceive(Context context, Intent intent) {
