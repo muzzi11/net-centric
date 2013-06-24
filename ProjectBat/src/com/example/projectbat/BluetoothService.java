@@ -84,13 +84,7 @@ public class BluetoothService
 
 	private void connectingSucceeded(BluetoothDevice device)
 	{		
-		btInterface.displayMessage("Connecting succeeded, sending addresses");
-		
-		String address = device.getAddress();
-		addresses.add(address);
-
-		btInterface.updateDevices(addresses);		
-		btInterface.addPairedDevice(address);		
+		String address = device.getAddress();		
 
 		// Notify parent of new node in the network
 		if (parent != null)			
@@ -98,18 +92,25 @@ public class BluetoothService
 
 		// Send the child the current known addresses in the network
 		child = connections.get(device.getAddress());
-		child.sendObject(addresses, arrayListMsgID);		
+		child.sendObject(addresses, arrayListMsgID);
+		
+		// Add the childs address to your own address database
+		addresses.add(address);
+		
+		btInterface.displayMessage("Connecting succeeded, sending addresses");
+		btInterface.updateDevices(addresses);		
+		btInterface.addPairedDevice(address);
 	}
 
 	private void acceptingSucceeded(BluetoothDevice device)
 	{
 		String address = device.getAddress();
 		addresses.add(address);
-
-		btInterface.updateDevices(addresses);
-		btInterface.displayMessage("Accepting succeeded, adding address");	
-
 		parent = connections.get(address);	
+		
+		btInterface.displayMessage("Accepting succeeded, adding address");
+		btInterface.addPairedDevice(address);
+		btInterface.updateDevices(addresses);
 	}
 
 	public void broadcastMessage(String message)
@@ -194,9 +195,8 @@ public class BluetoothService
 						Connection con = new Connection(btSocket);						
 						connections.put(address, con);						
 						sockets.put(address, btSocket);
-
-						acceptingSucceeded(remoteDevice);
-						btInterface.addPairedDevice(address);						
+						
+						acceptingSucceeded(remoteDevice);												
 					}
 					else if( !redundantSockets.containsKey(address)) 
 						redundantSockets.put(address, btSocket);									
@@ -252,10 +252,15 @@ public class BluetoothService
 				bos.write(bytes);
 				bos.write(msgID);
 				bos.flush();
+				
+				bytes = bos.toByteArray();
 			}
 			catch (IOException e) { e.printStackTrace(); }			
-
-			bytes = bos.toByteArray();
+			finally 
+			{
+				try { bos.close(); }
+				catch (IOException e) { e.printStackTrace(); }		  
+			}			
 
 			try { outStream.write(bytes); }
 			catch (IOException e) { e.printStackTrace(); }
@@ -271,7 +276,8 @@ public class BluetoothService
 		{
 			ByteArrayOutputStream bos = new ByteArrayOutputStream();
 			ObjectOutput out = null;
-
+			byte[] bytes = null;
+			
 			try 
 			{
 				out = new ObjectOutputStream(bos);
@@ -279,7 +285,7 @@ public class BluetoothService
 				out.writeByte(msgID);
 				out.flush();
 
-				byte[] bytes = bos.toByteArray();
+				bytes = bos.toByteArray();
 				sendBytes(bytes);
 			} 
 			catch (IOException e) { e.printStackTrace(); }
