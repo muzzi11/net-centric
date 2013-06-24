@@ -12,6 +12,8 @@ public class StreamingRecorder
 	private AudioRecord record;
 	private int bufferSize;
 	
+	private long samples = 0;
+	
 	StreamingRecorder()
 	{
 		bufferSize = AudioRecord.getMinBufferSize(sampleRate, AudioFormat.CHANNEL_IN_MONO,
@@ -45,6 +47,17 @@ public class StreamingRecorder
 	}
 	
 	/**
+	 * @return The amount of samples that have been read since construction.
+	 */
+	public long elapsed()
+	{
+		synchronized(this)
+		{
+			return samples;
+		}
+	}
+	
+	/**
 	 * Blocks until buffer is filled with sizeInShorts elements.
 	 * @param buffer Needs to be larger than or equal to sizeInShorts.
 	 * @param sizeInShorts Amount of samples to be read.
@@ -58,6 +71,11 @@ public class StreamingRecorder
 		{
 			final int shortsRead = record.read(buffer, currentSize, sizeInShorts - currentSize);
 			currentSize += shortsRead;
+		}
+		
+		synchronized(this)
+		{
+			samples += currentSize;
 		}
 	}
 }

@@ -15,7 +15,7 @@ public class MainActivity extends Activity
 	public static BeepGenerator beepGenerator;
 	private static StreamingRecorder streamingRecorder;
 	private BeepTimer beepTimer;
-
+	
 	
     @Override
     protected void onCreate(Bundle savedInstanceState) 
@@ -25,7 +25,7 @@ public class MainActivity extends Activity
         
         beepGenerator = new BeepGenerator();
         streamingRecorder = new StreamingRecorder();
-        beepTimer = new BeepTimer(0);
+        beepTimer = new BeepTimer();
         
         Thread t = new Thread(new BeepDetector(streamingRecorder, beepTimer));
         t.setDaemon(true);
@@ -37,7 +37,6 @@ public class MainActivity extends Activity
         	public void onClick(View v)
         	{
         		//MainActivity.streamingRecorder.start();
-        		beepTimer.restart();
         		MainActivity.beepGenerator.play();
         		/*
         		short[] buffer = new short[11025];

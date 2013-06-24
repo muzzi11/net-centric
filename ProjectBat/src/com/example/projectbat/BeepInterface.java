@@ -2,5 +2,9 @@ package com.example.projectbat;
 
 public interface BeepInterface
 {
-	public void update(int samplesRead, boolean beep);
+	/**
+	 * Callback function for when a beep occurs.
+	 * @param timeInSamples Time in samples since program start.
+	 */
+	public void onBeep(long timeInSamples);
 }
