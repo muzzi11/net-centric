@@ -40,7 +40,7 @@ public class BluetoothService
 
 	private final UUID uuid = UUID.fromString("04c6093b-0000-1000-8000-00805f9b34fb");
 
-	private final byte arrayListMsgID = 0x0;
+	private final byte arrayListMsgID = 0x2;
 	private final byte addressMsgID = 0x4;
 	private final byte stringMsgID = 0x8;
 
@@ -121,7 +121,11 @@ public class BluetoothService
 	}
 	
 	public boolean connect(BluetoothDevice device)
-	{        
+	{
+		final String address = device.getAddress();
+		
+		if(sockets.containsKey(address)) return connections.get(address) != null;
+		
 		btAdapter.cancelDiscovery();
 
 		BluetoothSocket btSocket = null;
@@ -141,8 +145,6 @@ public class BluetoothService
 
 			if(btSocket.isConnected())
 			{
-				final String address = device.getAddress();
-
 				Log.i("Bluetooth", "Connected DJECKO");	        			
 
 				if( !sockets.containsKey(address) )
@@ -248,6 +250,7 @@ public class BluetoothService
 			{
 				bos.write(bytes);
 				bos.write(msgID);
+				bos.flush();
 			}
 			catch (IOException e) { e.printStackTrace(); }			
 
@@ -273,6 +276,7 @@ public class BluetoothService
 				out = new ObjectOutputStream(bos);
 				out.writeObject(obj);
 				out.writeByte(msgID);
+				out.flush();
 
 				byte[] bytes = bos.toByteArray();
 				sendBytes(bytes);
@@ -371,6 +375,8 @@ public class BluetoothService
 						byte id = buffer[size - 1];
 						if (parserMap.get(id) != null)
 							parserMap.get(id).parse(buffer, size - 1);
+						else
+							btInterface.displayMessage("id error: " + Byte.toString(id));
 					}
 				}
 			}
