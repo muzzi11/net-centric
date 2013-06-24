@@ -10,6 +10,8 @@ public class BeepTimer implements BeepInterface
 	private boolean timing = true;
 	private boolean beeped = false;
 	
+	private long time2 = 0;
+	
 	BeepTimer(int gracePeriod)
 	{
 		this.gracePeriod = gracePeriod;
@@ -23,12 +25,12 @@ public class BeepTimer implements BeepInterface
 			time += samplesRead;
 			if(grace <= 0)
 			{
-				if(beep)
+				if(beep && timing)
 				{
 					timing = false;
 					beeped = true;
 					
-					Log.i("TIMER", Integer.toString(time));
+					Log.i("TIMER", Integer.toString(time*1000/44100) + " "+ Long.toString(System.currentTimeMillis() - time2));
 				}
 			}
 			else
@@ -46,6 +48,7 @@ public class BeepTimer implements BeepInterface
 			timing = true;
 			beeped = false;
 			time = 0;
+			time2 = System.currentTimeMillis();
 		}
 	}
 	

@@ -8,7 +8,6 @@ public class BeepDetector implements Runnable
 	private final int fftIndex;
 	private final short[] buffer = new short[5 * BeepGenerator.beepPeriod];
 	private final float[] signal = new float[2 * buffer.length];
-	private final float[] beepFFT;
 	private final FloatFFT_1D fft = new FloatFFT_1D(buffer.length);
 	private final StreamingRecorder recorder;
 	private final BeepInterface beepInterface;
@@ -19,9 +18,6 @@ public class BeepDetector implements Runnable
 		this.beepInterface = beepInterface;
 		
 		fftIndex = 2 * buffer.length / BeepGenerator.beepPeriod + 1;
-		
-		beepFFT = BeepGenerator.generateSignal(signal.length);
-		fft.realForward(beepFFT);
 		
 		recorder.start();
 	}

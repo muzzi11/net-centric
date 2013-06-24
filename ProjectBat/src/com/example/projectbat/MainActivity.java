@@ -25,7 +25,7 @@ public class MainActivity extends Activity
         
         beepGenerator = new BeepGenerator();
         streamingRecorder = new StreamingRecorder();
-        beepTimer = new BeepTimer(BeepGenerator.beepPeriod);
+        beepTimer = new BeepTimer(0);
         
         Thread t = new Thread(new BeepDetector(streamingRecorder, beepTimer));
         t.setDaemon(true);
@@ -37,8 +37,8 @@ public class MainActivity extends Activity
         	public void onClick(View v)
         	{
         		//MainActivity.streamingRecorder.start();
-        		MainActivity.beepGenerator.play();
         		beepTimer.restart();
+        		MainActivity.beepGenerator.play();
         		/*
         		short[] buffer = new short[11025];
 				MainActivity.streamingRecorder.read(buffer, buffer.length);
