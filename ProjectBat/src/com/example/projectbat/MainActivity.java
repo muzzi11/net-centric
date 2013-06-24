@@ -12,7 +12,7 @@ import android.widget.Button;
 
 public class MainActivity extends Activity
 {	
-	private static BeepGenerator beepGenerator;
+	public static BeepGenerator beepGenerator;
 	private static StreamingRecorder streamingRecorder;
 
 	
