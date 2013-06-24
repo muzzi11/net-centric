@@ -297,7 +297,7 @@ public class BluetoothService
 					{
 						btInterface.displayMessage("Received arrayList");
 		
-						ByteArrayInputStream bis = new ByteArrayInputStream(buffer, 0, size -1);			            	
+						ByteArrayInputStream bis = new ByteArrayInputStream(buffer, 0, size);			            	
 						ObjectInput in = null;
 						
 						try 
@@ -329,7 +329,7 @@ public class BluetoothService
 						btInterface.displayMessage("Received address");
 						String address = null;
 
-						try { address = new String(buffer, 0, size - 1, "UTF-8"); }
+						try { address = new String(buffer, 0, size, "UTF-8"); }
 						catch (UnsupportedEncodingException e) { e.printStackTrace(); }
 
 						addresses.add(address);            	
@@ -348,7 +348,7 @@ public class BluetoothService
 						btInterface.displayMessage("Received string");
 						String text = null;
 
-						try { text = new String(buffer, 0, size - 1, "UTF-8"); }
+						try { text = new String(buffer, 0, size, "UTF-8"); }
 						catch (UnsupportedEncodingException e) { e.printStackTrace(); }
 
 						btInterface.displayMessage(text);
@@ -360,7 +360,7 @@ public class BluetoothService
 			public void run() 
 			{
 				byte[] buffer = new byte[1024];
-				int size;
+				int size = 0;
 
 				while( true )
 				{
@@ -369,7 +369,8 @@ public class BluetoothService
 					if (size > 0)
 					{		           
 						byte id = buffer[size - 1];
-						parserMap.get(id).parse(buffer, size);
+						if (parserMap.get(id) != null)
+							parserMap.get(id).parse(buffer, size - 1);
 					}
 				}
 			}
