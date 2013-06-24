@@ -22,42 +22,50 @@ import android.bluetooth.BluetoothSocket;
 import android.util.Log;
 
 public class BluetoothService 
-{
-	private final BluetoothAdapter btAdapter;
-	private final BluetoothInterface btInterface;
-	BluetoothServerSocket btServerSocket = null;
-
+{	
+	private BluetoothServerSocket btServerSocket = null;
+	private Thread acceptThread = null;	
+	
 	private final Map<String, BluetoothSocket> sockets = new HashMap<String, BluetoothSocket>();
 	private final Map<String, BluetoothSocket> redundantSockets = new HashMap<String, BluetoothSocket>();
-
-	private final Map<String, Connection> connections = new HashMap<String, Connection>(); 
-	private final ArrayList<String> addresses = new ArrayList<String>();
-
-	private Thread acceptThread = null;	
+	private final Map<String, Connection> connections = new HashMap<String, Connection>(); 	
 
 	private final UUID uuid = UUID.fromString("04c6093b-0000-1000-8000-00805f9b34fb");
-
-	public final LinkBuildingHandlers linkBuildingHandlers;
-	
-	private final byte addressestMsgID = 0x2;
-	private final byte addressMsgID = 0x4;
-	private final byte broadcastMsgID = 0x6;
-	private final byte sendtoMsgID = 0x8;
 	
 	private final int STRING = 1;
 	private final int OBJECT = 2;
+	
+	public final BluetoothAdapter btAdapter;
+	public final BluetoothInterface btInterface;
+	
+	public final LinkBuildingHandlers linkBuildingHandlers;
+	public final AudioHandlers audioHandlers;
+	
+	public final ArrayList<String> addresses = new ArrayList<String>();
+	
+	public Connection parent = null;
+	public Connection child = null;
+	
+	public final byte addressesMsgID = 0x2;
+	public final byte addressMsgID = 0x4;
+	public final byte broadcastMsgID = 0x6;
+	public final byte sendtoMsgID = 0x8;
+	
+	public final String BUILDING_DONE = "BuildingDone";
+	public final String START_LISTENING = "StartListening";	
 
 	public BluetoothService(BluetoothInterface ie)
 	{
 		btInterface = ie;
 		btAdapter = BluetoothAdapter.getDefaultAdapter();	
 		
-		linkBuildingHandlers = new LinkBuildingHandlers(ie, addresses, connections);
+		linkBuildingHandlers = new LinkBuildingHandlers(this);
+		audioHandlers = new AudioHandlers(this);
 	}
 
 	public synchronized void start()
 	{
-		Log.d("Bluetooth", "Service started");
+		btInterface.displayMessage("Service started");
 		
 		acceptThread = new Thread(new AcceptThread());
 		acceptThread.setDaemon(true);
@@ -79,6 +87,31 @@ public class BluetoothService
 			try{ btSocket.close(); }
 			catch(IOException e){ Log.e("Bluetooth", e.getMessage()); }
 		}		
+	}
+	
+	public void broadcastMessage(String message)
+	{
+		btInterface.displayMessage("Broadcasting message: " + message);
+				
+		for (Connection con : connections.values())					
+			con.sendString(message, broadcastMsgID);		
+	}
+	
+	public void sendToId(String address, String msg)
+	{
+		btInterface.displayMessage("Sending: " + msg + " to: " + address);
+		
+		int myIndex = addresses.indexOf(btAdapter.getAddress());
+		int targetIndex = addresses.indexOf(address);
+		
+		ArrayList<String> data = new ArrayList<String>();
+		data.add(address);
+		data.add(msg);
+		
+		if (myIndex < targetIndex)
+			parent.sendObject(data, sendtoMsgID);
+		else
+			child.sendObject(data, sendtoMsgID);
 	}
 	
 	public boolean connect(BluetoothDevice device)
@@ -106,20 +139,17 @@ public class BluetoothService
 
 			if(btSocket.isConnected())
 			{
-				Log.i("Bluetooth", "Connected DJECKO");	        			
+				btInterface.displayMessage("Connecting succeeded");	        			
+									
+				child = new Connection(btSocket);
+				connections.put(address, child);				
 
-				if( !sockets.containsKey(address) )
-				{					
-					Connection con = new Connection(btSocket);
-					connections.put(address, con);				
-
-					sockets.put(address, btSocket);				
-					linkBuildingHandlers.connectingSucceeded(device);
-					return true;
-				}
+				sockets.put(address, btSocket);				
+				linkBuildingHandlers.connectingSucceeded(device);
+				return true;				
 			}     			
 		}
-		Log.e("Bluetooth", "Failed to connect.");
+		btInterface.displayMessage("Connecting failed.");
 		return false;
 	}
 	
@@ -150,9 +180,11 @@ public class BluetoothService
 					final String address = remoteDevice.getAddress();					
 
 					if( !sockets.containsKey(address) )
-					{						
-						Connection con = new Connection(btSocket);						
-						connections.put(address, con);						
+					{
+						btInterface.displayMessage("Accepting succeeded");
+						
+						parent = new Connection(btSocket);						
+						connections.put(address, parent);						
 						sockets.put(address, btSocket);
 						
 						linkBuildingHandlers.acceptingSucceeded(remoteDevice);												
@@ -200,12 +232,14 @@ public class BluetoothService
 
 		public void sendString(String s, byte msgID) 
 		{
+			btInterface.displayMessage("Sending string: " + s);
+			
 			byte[] bytes = null;
 
 			try { bytes = s.getBytes("UTF-8"); } 
 			catch (UnsupportedEncodingException e) { e.printStackTrace(); }
 
-			ByteArrayOutputStream bos = new ByteArrayOutputStream( );
+			ByteArrayOutputStream bos = new ByteArrayOutputStream();
 			try 
 			{
 				bos.write(bytes);
@@ -213,6 +247,7 @@ public class BluetoothService
 				bos.flush();
 				
 				bytes = bos.toByteArray();
+				sendBytes(bytes);
 			}
 			catch (IOException e) { e.printStackTrace(); }			
 			finally 
@@ -220,24 +255,17 @@ public class BluetoothService
 				try { bos.close(); }
 				catch (IOException e) { e.printStackTrace(); }		  
 			}			
-
-			try { outStream.write(bytes); }
-			catch (IOException e) { e.printStackTrace(); }
-		}
-
-		public void sendBytes(byte[] buffer)
-		{
-			try { outStream.write(buffer); } 
-			catch (IOException e) { e.printStackTrace(); }
 		}
 
 		public void sendObject(Object obj, byte msgID)
 		{
+			btInterface.displayMessage("Sending object");
+			
 			ByteArrayOutputStream bos = new ByteArrayOutputStream();
 			ObjectOutput out = null;
 			byte[] bytes = null;
 			
-			try 
+			try
 			{
 				out = new ObjectOutputStream(bos);
 				out.writeObject(obj);
@@ -254,6 +282,12 @@ public class BluetoothService
 				catch (IOException e) { e.printStackTrace(); }		  
 			}
 		}
+		
+		private void sendBytes(byte[] buffer)
+		{
+			try { outStream.write(buffer); } 
+			catch (IOException e) { e.printStackTrace(); }
+		}
 
 		private class ConnectionThread implements Runnable
 		{
@@ -261,7 +295,7 @@ public class BluetoothService
 			
 			public ConnectionThread()
 			{			
-				parserMap.put(addressestMsgID, new Parser()
+				parserMap.put(addressesMsgID, new Parser()
 				{					
 					public void parse(byte[] buffer, int size)
 					{
@@ -279,6 +313,7 @@ public class BluetoothService
 					public void parse(byte[] buffer, int size)						
 					{
 						btInterface.displayMessage("Received address");
+			
 						String address = null;
 
 						try { address = new String(buffer, 0, size, "UTF-8"); }
@@ -293,7 +328,7 @@ public class BluetoothService
 				{
 					public void parse(byte[] buffer, int size)
 					{
-						btInterface.displayMessage("Received string");
+						btInterface.displayMessage("Received broadcast");
 						
 						final ArrayList<String> data = new ArrayList<String>();						
 						String msg = null;
@@ -305,7 +340,7 @@ public class BluetoothService
 							return;
 						
 						btInterface.displayMessage(msg);
-						linkBuildingHandlers.handlerMap.get(msg).handler();
+						audioHandlers.handlerMap.get(msg).handler();
 						
 						data.add(msg);								
 						relayMessage(data, STRING);						
@@ -316,8 +351,10 @@ public class BluetoothService
 				{					
 					public void parse(byte[] buffer, int size) 
 					{
-						ArrayList<String> arrayList = objectToArrayList(buffer, size);
-						String targetAddress, command;						
+						btInterface.displayMessage("Send to msg");
+						
+						String targetAddress, command;
+						ArrayList<String> arrayList = objectToArrayList(buffer, size);												
 						
 						if (arrayList == null)
 							return;
@@ -326,7 +363,7 @@ public class BluetoothService
 						command = arrayList.get(1);
 						
 						if (targetAddress == btAdapter.getAddress())
-							linkBuildingHandlers.handlerMap.get(command).handler();							
+							audioHandlers.handlerMap.get(command).handler();							
 						else						
 							relayMessage(arrayList, OBJECT);
 					}
@@ -385,12 +422,12 @@ public class BluetoothService
 		{
 			for(Map.Entry<String, BluetoothSocket> e : sockets.entrySet())
 			{
-				final String key = e.getKey();
+				final String address = e.getKey();
 				final BluetoothSocket sock = e.getValue();
 				
 				if (sock != socket)
 				{
-					Connection con = connections.get(key);
+					Connection con = connections.get(address);
 					
 					if (msgType == STRING)
 						con.sendString(msg.get(0), broadcastMsgID);

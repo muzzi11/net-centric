@@ -1,5 +1,9 @@
 ProjectBat/bin
+ProjectBat/.classpath
+
 .metadata/
+
 *.aux
 *.log
 *.synctex.gz
+

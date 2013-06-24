@@ -67,20 +67,14 @@ public class BluetoothActivity extends Activity implements BluetoothInterface
 						btAdapter.startDiscovery();
 					else
 					{
-						btService.linkBuildingHandlers.linkBuildingFinished();
-						
-						// connection has been established, turn off discoverability
-						Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
-						discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 1);
-						startActivity(discoverableIntent);
+						btService.linkBuildingHandlers.linkBuildingFinished();					
+						requestDiscoverable(1);
 					}
 				}
 				else
 				{
 					// connection has been established, turn off discoverability
-					Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
-					discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 1);
-					startActivity(discoverableIntent);
+					requestDiscoverable(1);
 				}
 			}
 		}
@@ -154,9 +148,7 @@ public class BluetoothActivity extends Activity implements BluetoothInterface
 
 		if(btAdapter.getScanMode() != BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE)
 		{
-			Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
-			discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 0);
-			startActivityForResult(discoverableIntent, REQUEST_DISCOVERABLE);
+			requestDiscoverable(0);
 		}
 
 		// Register the BroadcastReceiver
@@ -175,6 +167,13 @@ public class BluetoothActivity extends Activity implements BluetoothInterface
 		});      
 	}	
 
+	private void requestDiscoverable(int duration)
+	{
+		Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
+		discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, duration);
+		startActivity(discoverableIntent);
+	}
+	
 	@Override
 	protected void onStart() 
 	{
