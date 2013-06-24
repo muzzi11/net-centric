@@ -8,7 +8,7 @@ import android.util.Log;
 public class BeepGenerator
 {
 	public static final int beepPeriod = 5;
-	private final short buffer[] = new short[50];
+	private final short buffer[] = new short[10 * beepPeriod];
 	private final int sampleRate;
 	private final AudioTrack track;
 	
@@ -23,7 +23,7 @@ public class BeepGenerator
 		
 		for(int i = 0; i < buffer.length; ++i)
 		{
-			buffer[i] = (short) (Math.sin(i * 2.0 * Math.PI / beepPeriod) * Short.MAX_VALUE);
+			buffer[i] = (short) (Math.sin((i+1) * 2.0 * Math.PI / beepPeriod) * Short.MAX_VALUE);
 		}
 		
 		track.write(buffer, 0, buffer.length);

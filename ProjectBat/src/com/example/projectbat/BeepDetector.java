@@ -6,15 +6,17 @@ import edu.emory.mathcs.jtransforms.fft.FloatFFT_1D;
 public class BeepDetector implements Runnable 
 {
 	private final int fftIndex;
-	private final short[] buffer = new short[50];
+	private final short[] buffer = new short[5 * BeepGenerator.beepPeriod];
 	private final float[] signal = new float[2 * buffer.length];
 	private final float[] beepFFT;
 	private final FloatFFT_1D fft = new FloatFFT_1D(buffer.length);
 	private final StreamingRecorder recorder;
+	private final BeepInterface beepInterface;
 	
-	BeepDetector(StreamingRecorder recorder)
+	BeepDetector(StreamingRecorder recorder, BeepInterface beepInterface)
 	{
-		this.recorder= recorder; 
+		this.recorder= recorder;
+		this.beepInterface = beepInterface;
 		
 		fftIndex = 2 * buffer.length / BeepGenerator.beepPeriod + 1;
 		
@@ -39,10 +41,13 @@ public class BeepDetector implements Runnable
 			fft.realForwardFull(signal);
 			
 			final double strength = signal[fftIndex]*signal[fftIndex] + signal[fftIndex+1]*signal[fftIndex+1];
-			if(strength > 10.0)
+			boolean beep = strength > 2.0;
+			if(beep)
 			{
 				Log.i("Detector", "BEEP! "+Double.toString(strength));
 			}
+			
+			beepInterface.update(buffer.length, beep);
 		}
 	}
 }
