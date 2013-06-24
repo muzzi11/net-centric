@@ -27,9 +27,6 @@ public class BluetoothService
 	private final BluetoothInterface btInterface;
 	BluetoothServerSocket btServerSocket = null;
 
-	private Connection parent = null;
-	private Connection child = null;
-
 	private final Map<String, BluetoothSocket> sockets = new HashMap<String, BluetoothSocket>();
 	private final Map<String, BluetoothSocket> redundantSockets = new HashMap<String, BluetoothSocket>();
 
@@ -40,14 +37,22 @@ public class BluetoothService
 
 	private final UUID uuid = UUID.fromString("04c6093b-0000-1000-8000-00805f9b34fb");
 
-	private final byte arrayListMsgID = 0x2;
+	public final LinkBuildingHandlers linkBuildingHandlers;
+	
+	private final byte addressestMsgID = 0x2;
 	private final byte addressMsgID = 0x4;
-	private final byte broadcastMsgID = 0x8;
+	private final byte broadcastMsgID = 0x6;
+	private final byte sendtoMsgID = 0x8;
+	
+	private final int STRING = 1;
+	private final int OBJECT = 2;
 
 	public BluetoothService(BluetoothInterface ie)
 	{
 		btInterface = ie;
-		btAdapter = BluetoothAdapter.getDefaultAdapter();		
+		btAdapter = BluetoothAdapter.getDefaultAdapter();	
+		
+		linkBuildingHandlers = new LinkBuildingHandlers(ie, addresses, connections);
 	}
 
 	public synchronized void start()
@@ -74,51 +79,6 @@ public class BluetoothService
 			try{ btSocket.close(); }
 			catch(IOException e){ Log.e("Bluetooth", e.getMessage()); }
 		}		
-	}
-
-	public void linkBuilding()
-	{	
-		addresses.add(btAdapter.getAddress());
-		btInterface.displayMessage("Starting discovery");
-		btAdapter.startDiscovery();
-	}
-
-	private void connectingSucceeded(BluetoothDevice device)
-	{		
-		String address = device.getAddress();		
-
-		// Notify parent of new node in the network
-		if (parent != null)			
-			parent.sendString(address, addressMsgID);
-
-		// Send the child the current known addresses in the network
-		addresses.add(address);
-		child = connections.get(device.getAddress());
-		child.sendObject(addresses, arrayListMsgID);
-		
-		// Add the childs address to your own address database
-		
-		
-		btInterface.displayMessage("Connecting succeeded, sending addresses");
-		btInterface.updateDevices(addresses);		
-		btInterface.addPairedDevice(address);
-	}
-
-	private void acceptingSucceeded(BluetoothDevice device)
-	{
-		String address = device.getAddress();		
-		parent = connections.get(address);	
-		
-		btInterface.displayMessage("Accepting succeeded, adding address");
-		btInterface.addPairedDevice(address);
-		btInterface.updateDevices(addresses);
-	}
-
-	public void broadcastMessage(String message)
-	{
-		Log.d("Bluetooth", "Active connections: " + connections.size());
-		for (Connection con : connections.values())					
-			con.sendString(message, broadcastMsgID);		
 	}
 	
 	public boolean connect(BluetoothDevice device)
@@ -154,7 +114,7 @@ public class BluetoothService
 					connections.put(address, con);				
 
 					sockets.put(address, btSocket);				
-					connectingSucceeded(device);
+					linkBuildingHandlers.connectingSucceeded(device);
 					return true;
 				}
 			}     			
@@ -195,7 +155,7 @@ public class BluetoothService
 						connections.put(address, con);						
 						sockets.put(address, btSocket);
 						
-						acceptingSucceeded(remoteDevice);												
+						linkBuildingHandlers.acceptingSucceeded(remoteDevice);												
 					}
 					else if( !redundantSockets.containsKey(address)) 
 						redundantSockets.put(address, btSocket);									
@@ -204,7 +164,7 @@ public class BluetoothService
 		}
 	}
 
-	private class Connection 
+	public class Connection 
 	{
 		private final BluetoothSocket socket;
 
@@ -300,36 +260,17 @@ public class BluetoothService
 			private final Map<Byte, Parser> parserMap = new HashMap<Byte, Parser>();
 			
 			public ConnectionThread()
-			{
-				parserMap.put(arrayListMsgID, new Parser()
-				{
+			{			
+				parserMap.put(addressestMsgID, new Parser()
+				{					
 					public void parse(byte[] buffer, int size)
 					{
-						btInterface.displayMessage("Received arrayList");
-		
-						ByteArrayInputStream bis = new ByteArrayInputStream(buffer, 0, size);			            	
-						ObjectInput in = null;
+						btInterface.displayMessage("Received addresses.");
 						
-						try 
-						{
-							in = new ObjectInputStream(bis);
-							Object o = in.readObject();			            	  
-							addresses.addAll((ArrayList<String>) o);
-						}
-						catch (IOException e) { e.printStackTrace(); }
-						catch (ClassNotFoundException e) { e.printStackTrace(); }
-						finally 
-						{
-							try 
-							{
-								bis.close();
-								in.close();
-							} catch (IOException e) { e.printStackTrace(); }			            	  
-						}
-		
-						btInterface.updateDevices(addresses);
-						btInterface.displayMessage("Starting discovery");
-						btAdapter.startDiscovery();
+						ArrayList<String> arrayList = objectToArrayList(buffer, size);						
+						
+						if (arrayList != null)
+							linkBuildingHandlers.processReceivedAddresses(arrayList);
 					}
 				});
 				
@@ -343,12 +284,8 @@ public class BluetoothService
 						try { address = new String(buffer, 0, size, "UTF-8"); }
 						catch (UnsupportedEncodingException e) { e.printStackTrace(); }
 
-						addresses.add(address);            	
-						btInterface.updateDevices(addresses);
-
-						// Send new address to parent if applicable
-						if (parent != null)
-							parent.sendString(address, addressMsgID);            	
+						if (address != null)
+							linkBuildingHandlers.propagateAddress(address);      	
 					}
 				});
 				
@@ -357,28 +294,44 @@ public class BluetoothService
 					public void parse(byte[] buffer, int size)
 					{
 						btInterface.displayMessage("Received string");
-						String text = null;
-
-						try { text = new String(buffer, 0, size, "UTF-8"); }
-						catch (UnsupportedEncodingException e) { e.printStackTrace(); }
-
-						btInterface.displayMessage(text);
 						
-						for(Map.Entry<String, BluetoothSocket> e : sockets.entrySet())
-						{
-							final String key = e.getKey();
-							final BluetoothSocket sock = e.getValue();
-							
-							if (sock != socket)
-							{
-								Connection con = connections.get(key);
-								con.sendString(text, broadcastMsgID);
-							}								
-						}								
+						final ArrayList<String> data = new ArrayList<String>();						
+						String msg = null;
+
+						try { msg = new String(buffer, 0, size, "UTF-8"); }
+						catch (UnsupportedEncodingException e) { e.printStackTrace(); }
+						
+						if (msg == null)
+							return;
+						
+						btInterface.displayMessage(msg);
+						linkBuildingHandlers.handlerMap.get(msg).handler();
+						
+						data.add(msg);								
+						relayMessage(data, STRING);						
 					}
 				});
-			}
-			
+				
+				parserMap.put(sendtoMsgID, new Parser()
+				{					
+					public void parse(byte[] buffer, int size) 
+					{
+						ArrayList<String> arrayList = objectToArrayList(buffer, size);
+						String targetAddress, command;						
+						
+						if (arrayList == null)
+							return;
+						
+						targetAddress = arrayList.get(0);
+						command = arrayList.get(1);
+						
+						if (targetAddress == btAdapter.getAddress())
+							linkBuildingHandlers.handlerMap.get(command).handler();							
+						else						
+							relayMessage(arrayList, OBJECT);
+					}
+				});
+			}			
 						
 			public void run() 
 			{
@@ -399,7 +352,53 @@ public class BluetoothService
 					}
 				}
 			}
-		}	    	    
+		}
+		
+		private ArrayList<String> objectToArrayList(byte[] buffer, int size)
+		{
+			btInterface.displayMessage("Received addresses.");
+			
+			ByteArrayInputStream bis = new ByteArrayInputStream(buffer, 0, size);			            	
+			ObjectInput in = null;						
+			ArrayList<String> arrayList = null;
+			
+			try 
+			{
+				in = new ObjectInputStream(bis);
+				Object o = in.readObject();			            	  
+				arrayList = (ArrayList<String>) o;
+			}
+			catch (IOException e) { e.printStackTrace(); }
+			catch (ClassNotFoundException e) { e.printStackTrace(); }
+			finally 
+			{
+				try 
+				{
+					bis.close();
+					in.close();
+				} catch (IOException e) { e.printStackTrace(); }			            	  
+			}
+			return arrayList;
+		}
+		
+		private void relayMessage(ArrayList<String> msg, int msgType)
+		{
+			for(Map.Entry<String, BluetoothSocket> e : sockets.entrySet())
+			{
+				final String key = e.getKey();
+				final BluetoothSocket sock = e.getValue();
+				
+				if (sock != socket)
+				{
+					Connection con = connections.get(key);
+					
+					if (msgType == STRING)
+						con.sendString(msg.get(0), broadcastMsgID);
+					else if (msgType == OBJECT)
+						con.sendObject(msg, sendtoMsgID);
+				}								
+			}
+		}
 	}	
 }
 
