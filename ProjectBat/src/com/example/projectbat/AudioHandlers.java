@@ -25,7 +25,7 @@ public class AudioHandlers
 				
 				int myIndex = btService.addresses.indexOf(btService.btAdapter.getAddress());
 				if (myIndex == turn)
-					btService.sendToId("", btService.addresses.get(1), btService.START_LISTENING);
+					btService.sendToId(btService.addresses.get(1), "", btService.START_LISTENING);
 			}
 		});
 		
@@ -36,7 +36,7 @@ public class AudioHandlers
 				btService.btInterface.displayMessage("Starting listening");
 				
 				String sender = data.get(1);				
-				btService.sendToId("", sender, btService.ACK_LISTENING);
+				btService.sendToId(sender, "", btService.ACK_LISTENING);
 			}
 		});
 		
