@@ -167,7 +167,7 @@ public class BluetoothActivity extends Activity implements BluetoothInterface
 		});      
 	}	
 
-	private void requestDiscoverable(int duration)
+	private void requestDiscoverable(final int duration)
 	{
 		Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
 		discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, duration);
