@@ -64,7 +64,10 @@ public class BluetoothActivity extends Activity implements BluetoothInterface
 					foundDevices.clear();
 					
 					if (discoveryCounter < MAX_DISCOVERIES)
+					{
 						btAdapter.startDiscovery();
+						++discoveryCounter;
+					}
 					else
 					{
 						btService.linkBuildingHandlers.linkBuildingFinished();					
