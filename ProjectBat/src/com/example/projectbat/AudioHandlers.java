@@ -37,7 +37,7 @@ public class AudioHandlers
 		
 		handlerMap.put(btService.ACK_LISTENING, new Handler()
 		{
-			public void handler(String sender) 
+			public void handler(String sender)
 			{			
 				btService.btInterface.displayMessage("Received ack listening.");
 			}
