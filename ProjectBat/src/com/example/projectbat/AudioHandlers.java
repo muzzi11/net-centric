@@ -27,7 +27,7 @@ public class AudioHandlers
 		{
 			public void handler() 
 			{			
-				
+				btService.btInterface.displayMessage("Starting listening");
 			}
 		});
 	}
