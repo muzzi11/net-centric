@@ -22,7 +22,7 @@ public class BluetoothActivity extends Activity implements BluetoothInterface
 {
 	private static final int REQUEST_ENABLE_BT = 1;
 	private static final int REQUEST_DISCOVERABLE = 2;
-	private static final int MAX_DISCOVERIES = 5;
+	private static final int MAX_DISCOVERIES = 2;
 	
 	private BluetoothAdapter btAdapter;	
 	private BluetoothService btService;
@@ -57,12 +57,8 @@ public class BluetoothActivity extends Activity implements BluetoothInterface
 			{	        	
 				Log.i("Bluetooth", "Discovery finished");
 
-				if ( foundDevices.isEmpty() )	        	
-					btAdapter.startDiscovery();	        	
-				else if ( !btService.connect( foundDevices.get(0) ) )
+				if ( foundDevices.isEmpty() )
 				{
-					foundDevices.clear();
-					
 					if (discoveryCounter < MAX_DISCOVERIES)
 					{
 						btAdapter.startDiscovery();
@@ -73,6 +69,10 @@ public class BluetoothActivity extends Activity implements BluetoothInterface
 						btService.linkBuildingHandlers.linkBuildingFinished();					
 						requestDiscoverable(1);
 					}
+				}
+				else if ( !btService.connect( foundDevices.get(0) ) )
+				{
+					foundDevices.clear();
 				}
 				else
 				{

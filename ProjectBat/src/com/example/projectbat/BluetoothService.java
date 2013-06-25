@@ -108,7 +108,7 @@ public class BluetoothService
 		data.add(address);
 		data.add(msg);
 		
-		if (myIndex < targetIndex)
+		if (myIndex > targetIndex)
 			parent.sendObject(data, sendtoMsgID);
 		else
 			child.sendObject(data, sendtoMsgID);
@@ -391,6 +391,7 @@ public class BluetoothService
 			}
 		}
 		
+		@SuppressWarnings("unchecked")
 		private ArrayList<String> objectToArrayList(final byte[] buffer, final int size)
 		{
 			btInterface.displayMessage("Received addresses.");
