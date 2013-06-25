@@ -30,8 +30,8 @@ public class AudioHandlers
 			{			
 				btService.btInterface.displayMessage("Starting listening");
 
-				MainActivity.beepTimer.start(false);
-				btService.sendToId(sender, btService.START_LISTENING);
+				MainActivity.beepTimer.start(true);
+				btService.sendToId(sender, btService.ACK_LISTENING);
 			}
 		});
 		
