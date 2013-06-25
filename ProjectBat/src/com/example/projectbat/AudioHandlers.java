@@ -15,8 +15,9 @@ public class AudioHandlers
 		
 		handlerMap.put(btService.BUILDING_DONE, new Handler() 
 		{			
-			public void handler() 
+			public void handler(String sender) 
 			{
+				btService.btInterface.displayMessage("Received from: " + sender);
 				int myIndex = btService.addresses.indexOf(btService.btAdapter.getAddress());
 				if (myIndex == 0)
 					btService.sendToId(btService.addresses.get(1), btService.START_LISTENING);
@@ -25,9 +26,21 @@ public class AudioHandlers
 		
 		handlerMap.put(btService.START_LISTENING, new Handler()
 		{
-			public void handler() 
+			public void handler(String sender) 
 			{			
 				btService.btInterface.displayMessage("Starting listening");
+				
+				btService.sendToId(sender, btService.START_LISTENING);
+			}
+		});
+		
+		handlerMap.put(btService.ACK_LISTENING, new Handler()
+		{
+			public void handler(String sender) 
+			{			
+				btService.btInterface.displayMessage("Received ack listening.");
+				
+				
 			}
 		});
 	}
@@ -35,5 +48,5 @@ public class AudioHandlers
 
 interface Handler
 {
-	public void handler();
+	public void handler(String sender);
 }

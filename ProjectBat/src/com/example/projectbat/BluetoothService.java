@@ -53,7 +53,8 @@ public class BluetoothService
 	
 	public final String BUILDING_DONE = "BuildingDone";
 	public final String START_LISTENING = "StartListening";	
-
+	public final String ACK_LISTENING = "AckListening";
+	
 	public BluetoothService(final BluetoothInterface ie)
 	{
 		btInterface = ie;
@@ -97,15 +98,17 @@ public class BluetoothService
 			con.sendString(message, broadcastMsgID);		
 	}
 	
-	public void sendToId(final String address, final String msg)
+	public void sendToId(final String recipient, final String msg)
 	{
-		btInterface.displayMessage("Sending: " + msg + " to: " + address);
+		btInterface.displayMessage("Sending: " + msg + " to: " + recipient);
 		
 		final int myIndex = addresses.indexOf(btAdapter.getAddress());
-		final int targetIndex = addresses.indexOf(address);
+		final int targetIndex = addresses.indexOf(recipient);		
+		final String sender = btAdapter.getAddress();
 		
 		ArrayList<String> data = new ArrayList<String>();
-		data.add(address);
+		data.add(recipient);
+		data.add(sender);
 		data.add(msg);
 		
 		if (myIndex < targetIndex)
@@ -234,27 +237,13 @@ public class BluetoothService
 		{
 			btInterface.displayMessage("Sending string: " + s);
 			
-			byte[] bytes = null;
-
-			try { bytes = s.getBytes("UTF-8"); } 
-			catch (UnsupportedEncodingException e) { e.printStackTrace(); }
-
-			ByteArrayOutputStream bos = new ByteArrayOutputStream();
-			try 
-			{
-				bos.write(bytes);
-				bos.write(msgID);
-				bos.flush();
-				
-				bytes = bos.toByteArray();
-				sendBytes(bytes);
-			}
-			catch (IOException e) { e.printStackTrace(); }			
-			finally 
-			{
-				try { bos.close(); }
-				catch (IOException e) { e.printStackTrace(); }		  
-			}			
+			String sender = btAdapter.getAddress();			
+			
+			ArrayList<String> data = new ArrayList<String>();
+			data.add(s);
+			data.add(sender);
+			
+			sendObject(data, msgID);			
 		}
 
 		public void sendObject(final Object obj, final byte msgID)
@@ -311,14 +300,15 @@ public class BluetoothService
 					public void parse(final byte[] buffer, final int size)						
 					{
 						btInterface.displayMessage("Received address");
-			
-						String address = null;
-
-						try { address = new String(buffer, 0, size, "UTF-8"); }
-						catch (UnsupportedEncodingException e) { e.printStackTrace(); }
-
-						if (address != null)
-							linkBuildingHandlers.propagateAddress(address);      	
+						
+						String address;
+						ArrayList<String> arrayList = objectToArrayList(buffer, size);						
+						
+						if (arrayList == null)
+							return;
+						
+						address = arrayList.get(0);
+						linkBuildingHandlers.propagateAddress(address);      	
 					}
 				});
 				
@@ -328,17 +318,17 @@ public class BluetoothService
 					{
 						btInterface.displayMessage("Received broadcast");
 						
-						final ArrayList<String> data = new ArrayList<String>();						
-						String msg = null;
+						final String msg, sender;						
+						final ArrayList<String> data = objectToArrayList(buffer, size);						
 
-						try { msg = new String(buffer, 0, size, "UTF-8"); }
-						catch (UnsupportedEncodingException e) { e.printStackTrace(); }
-						
-						if (msg == null)
+						if (data == null)
 							return;
 						
+						msg = data.get(0);
+						sender = data.get(1);
+						
 						btInterface.displayMessage(msg);
-						audioHandlers.handlerMap.get(msg).handler();
+						audioHandlers.handlerMap.get(msg).handler(sender);
 						
 						data.add(msg);								
 						relayMessage(data, STRING);						
@@ -351,17 +341,18 @@ public class BluetoothService
 					{
 						btInterface.displayMessage("Send to msg");
 						
-						String targetAddress, command;
+						final String recipient, sender, command;
 						ArrayList<String> arrayList = objectToArrayList(buffer, size);												
 						
 						if (arrayList == null)
 							return;
 						
-						targetAddress = arrayList.get(0);
-						command = arrayList.get(1);
+						recipient = arrayList.get(0);
+						sender = arrayList.get(1);
+						command = arrayList.get(2);
 						
-						if ( targetAddress.equals(btAdapter.getAddress()) )
-							audioHandlers.handlerMap.get(command).handler();							
+						if ( recipient.equals(btAdapter.getAddress()) )
+							audioHandlers.handlerMap.get(command).handler(sender);							
 						else						
 							relayMessage(arrayList, OBJECT);
 					}
