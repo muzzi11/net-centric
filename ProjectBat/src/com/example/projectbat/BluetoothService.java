@@ -259,8 +259,6 @@ public class BluetoothService
 
 		public void sendObject(final Object obj, final byte msgID)
 		{
-			btInterface.displayMessage("Sending object");
-			
 			ByteArrayOutputStream bos = new ByteArrayOutputStream();
 			ObjectOutput out = null;
 			byte[] bytes = null;
@@ -362,7 +360,7 @@ public class BluetoothService
 						targetAddress = arrayList.get(0);
 						command = arrayList.get(1);
 						
-						if (targetAddress == btAdapter.getAddress())
+						if ( targetAddress.equals(btAdapter.getAddress()) )
 							audioHandlers.handlerMap.get(command).handler();							
 						else						
 							relayMessage(arrayList, OBJECT);
@@ -393,7 +391,7 @@ public class BluetoothService
 		
 		private ArrayList<String> objectToArrayList(final byte[] buffer, final int size)
 		{
-			btInterface.displayMessage("Received addresses.");
+			btInterface.displayMessage("Received object.");
 			
 			ByteArrayInputStream bis = new ByteArrayInputStream(buffer, 0, size);			            	
 			ObjectInput in = null;						
