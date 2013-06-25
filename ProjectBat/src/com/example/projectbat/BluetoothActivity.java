@@ -22,7 +22,7 @@ public class BluetoothActivity extends Activity implements BluetoothInterface
 {
 	private static final int REQUEST_ENABLE_BT = 1;
 	private static final int REQUEST_DISCOVERABLE = 2;
-	private static final int MAX_DISCOVERIES = 2;
+	private static final int MAX_DISCOVERIES = 1;
 	
 	private BluetoothAdapter btAdapter;	
 	private BluetoothService btService;

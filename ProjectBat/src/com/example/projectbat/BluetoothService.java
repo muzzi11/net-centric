@@ -51,9 +51,10 @@ public class BluetoothService
 	public final byte broadcastMsgID = 0x6;
 	public final byte sendtoMsgID = 0x8;
 	
-	public final String BUILDING_DONE = "BuildingDone";
-	public final String START_LISTENING = "StartListening";	
-	public final String ACK_LISTENING = "AckListening";
+	public final int BUILDING_DONE = 1;
+	public final int START_LISTENING = 2;	
+	public final int ACK_LISTENING = 3;
+	public final int TIME_MEASUREMENT = 4;
 	
 	public BluetoothService(final BluetoothInterface ie)
 	{
@@ -90,15 +91,15 @@ public class BluetoothService
 		}		
 	}
 	
-	public void broadcastMessage(final String message)
+	public void broadcastMessage(final int handlerId)
 	{
-		btInterface.displayMessage("Broadcasting message: " + message);
+		btInterface.displayMessage("Broadcasting handlerID: " + Integer.toHexString(handlerId));
 				
 		for (Connection con : connections.values())					
-			con.sendString(message, broadcastMsgID);		
+			con.sendString(Integer.toString(handlerId), broadcastMsgID);		
 	}
 	
-	public void sendToId(final String recipient, final String msg)
+	public void sendToId(final String recipient, String msg, final int handlerId)
 	{
 		btInterface.displayMessage("Sending: " + msg + " to: " + recipient);
 		
@@ -110,6 +111,7 @@ public class BluetoothService
 		data.add(recipient);
 		data.add(sender);
 		data.add(msg);
+		data.add(Integer.toString(handlerId));
 		
 		if (myIndex > targetIndex)
 			parent.sendObject(data, sendtoMsgID);
@@ -288,10 +290,10 @@ public class BluetoothService
 					{
 						btInterface.displayMessage("Received addresses.");
 						
-						ArrayList<String> arrayList = objectToArrayList(buffer, size);						
+						ArrayList<String> addresses = objectToArrayList(buffer, size);						
 						
-						if (arrayList != null)
-							linkBuildingHandlers.processReceivedAddresses(arrayList);
+						if (addresses != null)
+							linkBuildingHandlers.processReceivedAddresses(addresses);
 					}
 				});
 				
@@ -302,12 +304,12 @@ public class BluetoothService
 						btInterface.displayMessage("Received address");
 						
 						String address;
-						ArrayList<String> arrayList = objectToArrayList(buffer, size);						
+						ArrayList<String> data = objectToArrayList(buffer, size);						
 						
-						if (arrayList == null)
+						if (data == null)
 							return;
 						
-						address = arrayList.get(0);
+						address = data.get(0);
 						linkBuildingHandlers.propagateAddress(address);      	
 					}
 				});
@@ -318,19 +320,15 @@ public class BluetoothService
 					{
 						btInterface.displayMessage("Received broadcast");
 						
-						final String msg, sender;						
+						final int handlerId;
 						final ArrayList<String> data = objectToArrayList(buffer, size);						
 
 						if (data == null)
 							return;
 						
-						msg = data.get(0);
-						sender = data.get(1);
+						handlerId = Integer.parseInt(data.get(0));
 						
-						btInterface.displayMessage(msg);
-						audioHandlers.handlerMap.get(msg).handler(sender);
-						
-						data.add(msg);								
+						audioHandlers.handlerMap.get(handlerId).handler(data);								
 						relayMessage(data, STRING);						
 					}
 				});
@@ -341,20 +339,20 @@ public class BluetoothService
 					{
 						btInterface.displayMessage("Send to msg");
 						
-						final String recipient, sender, command;
-						ArrayList<String> arrayList = objectToArrayList(buffer, size);												
+						final String recipient;
+						final int handlerId;
+						ArrayList<String> data = objectToArrayList(buffer, size);												
 						
-						if (arrayList == null)
+						if (data == null)
 							return;
 						
-						recipient = arrayList.get(0);
-						sender = arrayList.get(1);
-						command = arrayList.get(2);
+						recipient = data.get(0);
+						handlerId = Integer.parseInt(data.get(3));
 						
 						if ( recipient.equals(btAdapter.getAddress()) )
-							audioHandlers.handlerMap.get(command).handler(sender);							
+							audioHandlers.handlerMap.get(handlerId).handler(data);							
 						else						
-							relayMessage(arrayList, OBJECT);
+							relayMessage(data, OBJECT);
 					}
 				});
 			}			
