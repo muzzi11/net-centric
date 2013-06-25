@@ -63,6 +63,7 @@ public class BluetoothActivity extends Activity implements BluetoothInterface
 					{
 						btAdapter.startDiscovery();
 						++discoveryCounter;
+						displayMessage("Service discovery attempt: " + Integer.toString(discoveryCounter));
 					}
 					else
 					{

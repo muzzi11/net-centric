@@ -14,7 +14,7 @@ public class MainActivity extends Activity
 {	
 	public static BeepGenerator beepGenerator;
 	private static StreamingRecorder streamingRecorder;
-	private BeepTimer beepTimer;
+	public static BeepTimer beepTimer;
 	
 	
     @Override

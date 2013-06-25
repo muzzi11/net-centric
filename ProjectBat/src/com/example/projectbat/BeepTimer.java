@@ -1,9 +1,8 @@
 package com.example.projectbat;
 
-import android.util.Log;
-
 public class BeepTimer implements BeepInterface
 {
+	private boolean isSender = true;
 	// the time in samples that accounts consecutive onBeep calls to the same beep signal
 	private long gracePeriod = BeepGenerator.beepPeriod * 10;
 	private long time;
@@ -12,7 +11,7 @@ public class BeepTimer implements BeepInterface
 	@Override
 	public void onBeep(long timeInSamples)
 	{
-		if(awaitFirst)
+		if(awaitFirst && isSender)
 		{
 			awaitFirst = false;
 			time = timeInSamples;
@@ -24,13 +23,14 @@ public class BeepTimer implements BeepInterface
 				awaitFirst = true;
 				time = timeInSamples - time;
 				
-				Log.i("Timer", Long.toString(time));
+				MainActivity.beepGenerator.play();
 			}
 		}
 	}
 	
-	public void start()
-	{
+	public void start(boolean isSender)
+	{	
+		this.isSender = isSender;
 		awaitFirst = true;
 	}
 }
