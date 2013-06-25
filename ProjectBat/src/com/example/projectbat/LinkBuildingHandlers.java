@@ -8,7 +8,7 @@ public class LinkBuildingHandlers
 {
 	private final BluetoothService btService;	
 	
-	public LinkBuildingHandlers(BluetoothService btServ)							
+	public LinkBuildingHandlers(final BluetoothService btServ)							
 	{
 		btService = btServ;				
 	}
@@ -28,7 +28,7 @@ public class LinkBuildingHandlers
 		btService.broadcastMessage(btService.BUILDING_DONE);
 	}
 	
-	public void connectingSucceeded(BluetoothDevice device)
+	public void connectingSucceeded(final BluetoothDevice device)
 	{		
 		btService.btInterface.displayMessage("Connecting succeeded, sending addresses");
 		
@@ -46,7 +46,7 @@ public class LinkBuildingHandlers
 		btService.btInterface.addPairedDevice(address);
 	}
 
-	public void acceptingSucceeded(BluetoothDevice device)
+	public void acceptingSucceeded(final BluetoothDevice device)
 	{
 		btService.btInterface.displayMessage("Accepting succeeded, adding address");
 		
@@ -56,7 +56,7 @@ public class LinkBuildingHandlers
 		btService.btInterface.updateDevices(btService.addresses);
 	}	
 	
-	public void propagateAddress(String address)
+	public void propagateAddress(final String address)
 	{
 		btService.btInterface.displayMessage("Propagating message: " + address);
 		
@@ -68,7 +68,7 @@ public class LinkBuildingHandlers
 			btService.parent.sendString(address, btService.addressMsgID);      
 	}
 	
-	public void processReceivedAddresses(ArrayList<String> adresses)
+	public void processReceivedAddresses(final ArrayList<String> adresses)
 	{
 		btService.btInterface.displayMessage("Received addresses, starting discovery");
 		

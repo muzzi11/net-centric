@@ -54,7 +54,7 @@ public class BluetoothService
 	public final String BUILDING_DONE = "BuildingDone";
 	public final String START_LISTENING = "StartListening";	
 
-	public BluetoothService(BluetoothInterface ie)
+	public BluetoothService(final BluetoothInterface ie)
 	{
 		btInterface = ie;
 		btAdapter = BluetoothAdapter.getDefaultAdapter();	
@@ -89,7 +89,7 @@ public class BluetoothService
 		}		
 	}
 	
-	public void broadcastMessage(String message)
+	public void broadcastMessage(final String message)
 	{
 		btInterface.displayMessage("Broadcasting message: " + message);
 				
@@ -97,12 +97,12 @@ public class BluetoothService
 			con.sendString(message, broadcastMsgID);		
 	}
 	
-	public void sendToId(String address, String msg)
+	public void sendToId(final String address, final String msg)
 	{
 		btInterface.displayMessage("Sending: " + msg + " to: " + address);
 		
-		int myIndex = addresses.indexOf(btAdapter.getAddress());
-		int targetIndex = addresses.indexOf(address);
+		final int myIndex = addresses.indexOf(btAdapter.getAddress());
+		final int targetIndex = addresses.indexOf(address);
 		
 		ArrayList<String> data = new ArrayList<String>();
 		data.add(address);
@@ -114,7 +114,7 @@ public class BluetoothService
 			child.sendObject(data, sendtoMsgID);
 	}
 	
-	public boolean connect(BluetoothDevice device)
+	public boolean connect(final BluetoothDevice device)
 	{
 		final String address = device.getAddress();
 		
@@ -205,7 +205,7 @@ public class BluetoothService
 
 		private final Thread connectedThread;
 
-		public Connection(BluetoothSocket s)
+		public Connection(final BluetoothSocket s)
 		{			
 			socket = s;	
 
@@ -230,7 +230,7 @@ public class BluetoothService
 			connectedThread.start();
 		}
 
-		public void sendString(String s, byte msgID) 
+		public void sendString(final String s, final byte msgID) 
 		{
 			btInterface.displayMessage("Sending string: " + s);
 			
@@ -257,7 +257,7 @@ public class BluetoothService
 			}			
 		}
 
-		public void sendObject(Object obj, byte msgID)
+		public void sendObject(final Object obj, final byte msgID)
 		{
 			btInterface.displayMessage("Sending object");
 			
@@ -283,7 +283,7 @@ public class BluetoothService
 			}
 		}
 		
-		private void sendBytes(byte[] buffer)
+		private void sendBytes(final byte[] buffer)
 		{
 			try { outStream.write(buffer); } 
 			catch (IOException e) { e.printStackTrace(); }
@@ -297,7 +297,7 @@ public class BluetoothService
 			{			
 				parserMap.put(addressesMsgID, new Parser()
 				{					
-					public void parse(byte[] buffer, int size)
+					public void parse(final byte[] buffer, final int size)
 					{
 						btInterface.displayMessage("Received addresses.");
 						
@@ -310,7 +310,7 @@ public class BluetoothService
 				
 				parserMap.put(addressMsgID, new Parser()
 				{
-					public void parse(byte[] buffer, int size)						
+					public void parse(final byte[] buffer, final int size)						
 					{
 						btInterface.displayMessage("Received address");
 			
@@ -326,7 +326,7 @@ public class BluetoothService
 				
 				parserMap.put(broadcastMsgID, new Parser()
 				{
-					public void parse(byte[] buffer, int size)
+					public void parse(final byte[] buffer, final int size)
 					{
 						btInterface.displayMessage("Received broadcast");
 						
@@ -349,7 +349,7 @@ public class BluetoothService
 				
 				parserMap.put(sendtoMsgID, new Parser()
 				{					
-					public void parse(byte[] buffer, int size) 
+					public void parse(final byte[] buffer, final int size) 
 					{
 						btInterface.displayMessage("Send to msg");
 						
@@ -372,7 +372,7 @@ public class BluetoothService
 						
 			public void run() 
 			{
-				byte[] buffer = new byte[1024];
+				final byte[] buffer = new byte[1024];
 				int size = 0;
 
 				while( true )
@@ -391,7 +391,7 @@ public class BluetoothService
 			}
 		}
 		
-		private ArrayList<String> objectToArrayList(byte[] buffer, int size)
+		private ArrayList<String> objectToArrayList(final byte[] buffer, final int size)
 		{
 			btInterface.displayMessage("Received addresses.");
 			
@@ -418,7 +418,7 @@ public class BluetoothService
 			return arrayList;
 		}
 		
-		private void relayMessage(ArrayList<String> msg, int msgType)
+		private void relayMessage(final ArrayList<String> msg, final int msgType)
 		{
 			for(Map.Entry<String, BluetoothSocket> e : sockets.entrySet())
 			{
@@ -441,5 +441,5 @@ public class BluetoothService
 
 interface Parser
 {
-	public void parse(byte[] buffer, int size);
+	public void parse(final byte[] buffer, final int size);
 }

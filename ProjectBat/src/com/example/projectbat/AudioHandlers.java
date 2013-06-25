@@ -9,7 +9,7 @@ public class AudioHandlers
 	
 	public final Map<String, Handler> handlerMap = new HashMap<String, Handler>();	
 	
-	public AudioHandlers(BluetoothService btServ)						 
+	public AudioHandlers(final BluetoothService btServ)						 
 	{
 		btService = btServ;
 		
