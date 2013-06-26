@@ -71,13 +71,12 @@ public class BluetoothService
 		
 		acceptThread = new Thread(new AcceptThread());
 		acceptThread.setDaemon(true);
-		acceptThread.start();        	
+		acceptThread.start();
 	}
 
 	public synchronized void stop()
 	{
-		try{ btServerSocket.close(); }
-		catch(IOException e){ Log.e("Bluetooth", e.getMessage()); }
+		stopAccept();
 
 		for(BluetoothSocket btSocket : sockets.values())
 		{
@@ -91,6 +90,11 @@ public class BluetoothService
 		}		
 	}
 	
+	public synchronized void stopAccept()
+	{
+		acceptThread.interrupt();
+	}
+	
 	public void broadcastMessage(final int handlerId)
 	{
 		btInterface.displayMessage("Broadcasting handlerID: " + Integer.toHexString(handlerId));
@@ -100,9 +104,7 @@ public class BluetoothService
 	}
 	
 	public void sendToId(final String recipient, String msg, final int handlerId)
-	{
-		btInterface.displayMessage("Sending: " + msg + " to: " + recipient);
-		
+	{		
 		final int myIndex = addresses.indexOf(btAdapter.getAddress());
 		final int targetIndex = addresses.indexOf(recipient);		
 		final String sender = btAdapter.getAddress();
@@ -172,7 +174,7 @@ public class BluetoothService
 				btInterface.exit();
 			}
 
-			while(true)
+			while(!Thread.currentThread().isInterrupted())
 			{
 				BluetoothSocket btSocket = null;
 
@@ -197,7 +199,10 @@ public class BluetoothService
 					else if( !redundantSockets.containsKey(address)) 
 						redundantSockets.put(address, btSocket);									
 				}
-			}						
+			}
+			
+			try{ btServerSocket.close(); }
+			catch(IOException e){ Log.e("Bluetooth", e.getMessage()); }
 		}
 	}
 
@@ -336,9 +341,7 @@ public class BluetoothService
 				parserMap.put(sendtoMsgID, new Parser()
 				{					
 					public void parse(final byte[] buffer, final int size) 
-					{
-						btInterface.displayMessage("Send to msg");
-						
+					{	
 						final String recipient;
 						final int handlerId;
 						ArrayList<String> data = objectToArrayList(buffer, size);												
@@ -380,9 +383,7 @@ public class BluetoothService
 		
 		@SuppressWarnings("unchecked")
 		private ArrayList<String> objectToArrayList(final byte[] buffer, final int size)
-		{
-			btInterface.displayMessage("Received object.");
-			
+		{	
 			ByteArrayInputStream bis = new ByteArrayInputStream(buffer, 0, size);			            	
 			ObjectInput in = null;						
 			ArrayList<String> arrayList = null;

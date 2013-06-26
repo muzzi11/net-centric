@@ -22,7 +22,8 @@ public class BluetoothActivity extends Activity implements BluetoothInterface
 {
 	private static final int REQUEST_ENABLE_BT = 1;
 	private static final int REQUEST_DISCOVERABLE = 2;
-	private static final int MAX_DISCOVERIES = 0;
+	private final int MAX_DISCOVERIES = 0;
+	private final int MAX_CONNECTION_ATTEMPTS = 1;
 	
 	private BluetoothAdapter btAdapter;	
 	private BluetoothService btService;
@@ -35,6 +36,7 @@ public class BluetoothActivity extends Activity implements BluetoothInterface
 	private ArrayAdapter<String> addressAdapter;
 	
 	private int discoveryCounter = 0;
+	private int connectionAttempt = 0;
 
 	private final BroadcastReceiver receiver = new BroadcastReceiver() {
 		public void onReceive(Context context, Intent intent) {
@@ -67,13 +69,15 @@ public class BluetoothActivity extends Activity implements BluetoothInterface
 					}
 					else
 					{
-						btService.linkBuildingHandlers.linkBuildingFinished();					
+						btService.linkBuildingHandlers.linkBuildingFinished();
 						requestDiscoverable(1);
 					}
 				}
 				else if ( !btService.connect( foundDevices.get(0) ) )
 				{
 					foundDevices.clear();
+					if(++connectionAttempt < MAX_CONNECTION_ATTEMPTS) btAdapter.startDiscovery();
+					else btService.linkBuildingHandlers.linkBuildingFinished();
 				}
 				else
 				{
@@ -168,7 +172,17 @@ public class BluetoothActivity extends Activity implements BluetoothInterface
 				discoveryButton.setText("Discovery Started");
 				btService.linkBuildingHandlers.linkBuilding();
 			}
-		});      
+		});
+		
+		final Button measureButton = (Button)findViewById(R.id.measure);
+        measureButton.setOnClickListener(new OnClickListener()
+        {
+			@Override
+			public void onClick(View v)
+			{
+				btService.sendToId(btService.addresses.get(1), "", btService.START_LISTENING);
+			}
+        });
 	}	
 
 	private void requestDiscoverable(final int duration)

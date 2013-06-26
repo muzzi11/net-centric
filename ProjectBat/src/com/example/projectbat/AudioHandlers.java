@@ -9,23 +9,40 @@ public class AudioHandlers
 	class Listener implements BeepTimerListener
 	{
 		String sender = null;
-		long time = 0;
-		boolean measurementReceived = false;
+		private long time = -1, measurement = -1;
 		
 		@Override
 		public void timeMeasured(long timeInSamples, boolean isListener)
 		{
+			//btService.btInterface.displayMessage(Boolean.toString(isListener)+" "+Long.toString(time)+" "+Long.toString(measurement));
 			if(sender != null && isListener)
 			{
 				btService.sendToId(sender, Long.toString(timeInSamples), btService.TIME_MEASUREMENT);
+				btService.btInterface.displayMessage("Measurement: "+Long.toString(timeInSamples));
 			}
-			
-			if(measurementReceived)
-			{
-				btService.btInterface.displayMessage("Time: "+Long.toString(timeInSamples - time));
-			}
-			
-			if(!isListener) time = timeInSamples;
+			time = timeInSamples;
+			if(measurement >= 0 && time >= 0) onAllReceived();
+		}
+		
+		private void onAllReceived()
+		{
+			double dist = 170.14 * (time - measurement) / 44100.0;
+			btService.btInterface.displayMessage("Time: "+Long.toString(time)+" "+
+					Long.toString(measurement)+" "+Double.toString(dist));
+			//btService.sendToId(btService.addresses.get(1), "", btService.START_LISTENING);
+			reset();
+		}
+		
+		public void reset()
+		{
+			sender = null;
+			measurement = time = -1;
+		}
+		
+		public void setMeasurement(long measurement)
+		{
+			this.measurement = measurement;
+			if(time >= 0) onAllReceived();
 		}
 	}
 	
@@ -50,22 +67,21 @@ public class AudioHandlers
 				String sender = data.get(1);				
 				btService.btInterface.displayMessage("Received from: " + sender);
 				
-				int myIndex = btService.addresses.indexOf(btService.btAdapter.getAddress());
-				if (myIndex == beeperTurn)
-					btService.sendToId(btService.addresses.get(1), "", btService.START_LISTENING);
+				//int myIndex = btService.addresses.indexOf(btService.btAdapter.getAddress());
+				//if (myIndex == beeperTurn)
+				//	btService.sendToId(btService.addresses.get(1), "", btService.START_LISTENING);
 			}
 		});
 		
 		handlerMap.put(btService.START_LISTENING, new Handler()
 		{
-			public void handler(ArrayList<String> data) 
+			public void handler(ArrayList<String> data)
 			{	
 				String sender = data.get(1);
-				
-				btService.btInterface.displayMessage("Starting listening");
 
-				MainActivity.beepTimer.start(true);
+				listener.reset();
 				listener.sender = sender;
+				MainActivity.beepTimer.start(true);
 						
 				btService.sendToId(sender, "", btService.ACK_LISTENING);
 			}
@@ -74,16 +90,10 @@ public class AudioHandlers
 		handlerMap.put(btService.ACK_LISTENING, new Handler()
 		{
 			public void handler(ArrayList<String> data) 
-			{			
-				btService.btInterface.displayMessage("Received ack listening.");
-				
+			{
+				listener.reset();
+				MainActivity.beepTimer.start(false);
 				MainActivity.beepGenerator.play();
-				listener.measurementReceived = false;
-				listener.time = 0;
-				
-				String sender, msg;
-				sender = data.get(1);
-				msg = data.get(2);
 			}
 		});
 		
@@ -92,18 +102,7 @@ public class AudioHandlers
 			public void handler(ArrayList<String> data) 
 			{
 				Long time = Long.parseLong(data.get(2));
-				
-				listener.measurementReceived = true;
-				
-				if(listener.time != 0)
-				{
-					time = listener.time - time;
-					btService.btInterface.displayMessage("Time: "+Long.toString(time));
-				}
-				else
-				{
-					listener.time = time;
-				}
+				listener.setMeasurement(time);
 			}
 		});
 	}

@@ -38,7 +38,7 @@ public class BeepDetector implements Runnable
 			fft.realForwardFull(signal);
 			
 			final double strength = signal[fftIndex]*signal[fftIndex] + signal[fftIndex+1]*signal[fftIndex+1];
-			boolean beep = strength > 2.0;
+			boolean beep = strength > 1.0;
 			if(beep)
 			{
 				Log.i("Detector", "BEEP! "+Double.toString(strength));

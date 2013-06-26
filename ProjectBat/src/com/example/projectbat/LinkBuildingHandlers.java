@@ -24,6 +24,7 @@ public class LinkBuildingHandlers
 	public void linkBuildingFinished()
 	{
 		btService.btInterface.displayMessage("Link building finished.");
+		btService.stopAccept();
 		
 		btService.broadcastMessage(btService.BUILDING_DONE);
 	}
