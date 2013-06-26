@@ -9,12 +9,12 @@ public class AudioHandlers
 	class Listener implements BeepTimerListener
 	{
 		String sender = null;
+		int counter = 0;
 		private long time = -1, measurement = -1;
 		
 		@Override
-		public void timeMeasured(long timeInSamples, boolean isListener)
+		public synchronized void timeMeasured(long timeInSamples, boolean isListener)
 		{
-			//btService.btInterface.displayMessage(Boolean.toString(isListener)+" "+Long.toString(time)+" "+Long.toString(measurement));
 			if(sender != null && isListener)
 			{
 				btService.sendToId(sender, Long.toString(timeInSamples), btService.TIME_MEASUREMENT);
@@ -27,19 +27,20 @@ public class AudioHandlers
 		private void onAllReceived()
 		{
 			double dist = 170.14 * (time - measurement) / 44100.0;
-			btService.btInterface.displayMessage("Time: "+Long.toString(time)+" "+
-					Long.toString(measurement)+" "+Double.toString(dist));
+			String d = String.format("%.4f", dist);
+			btService.btInterface.displayMessage(Integer.toString(++counter)+" : "+
+					Long.toString(time - measurement)+" : "+d+"m");
 			//btService.sendToId(btService.addresses.get(1), "", btService.START_LISTENING);
 			reset();
 		}
 		
-		public void reset()
+		public synchronized void reset()
 		{
 			sender = null;
 			measurement = time = -1;
 		}
 		
-		public void setMeasurement(long measurement)
+		public synchronized void setMeasurement(long measurement)
 		{
 			this.measurement = measurement;
 			if(time >= 0) onAllReceived();
@@ -66,10 +67,6 @@ public class AudioHandlers
 			{
 				String sender = data.get(1);				
 				btService.btInterface.displayMessage("Received from: " + sender);
-				
-				//int myIndex = btService.addresses.indexOf(btService.btAdapter.getAddress());
-				//if (myIndex == beeperTurn)
-				//	btService.sendToId(btService.addresses.get(1), "", btService.START_LISTENING);
 			}
 		});
 		

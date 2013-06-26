@@ -170,6 +170,11 @@ public class BluetoothActivity extends Activity implements BluetoothInterface
 			public void onClick(View v) 
 			{            	
 				discoveryButton.setText("Discovery Started");
+				discoveryButton.setEnabled(false);
+				
+				final Button measureButton = (Button)findViewById(R.id.measure);
+				measureButton.setEnabled(true);
+				
 				btService.linkBuildingHandlers.linkBuilding();
 			}
 		});

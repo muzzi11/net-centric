@@ -4,13 +4,13 @@ public class BeepTimer implements BeepInterface
 {
 	private boolean isListener = false, timing = false;
 	// the time in samples that accounts consecutive onBeep calls to the same beep signal
-	private long gracePeriod = BeepGenerator.beepPeriod * 350;
+	private long gracePeriod = BeepGenerator.beepPeriod * 330;
 	private long time;
 	private boolean awaitFirst = true;
 	private BeepTimerListener listener = null;
 	
 	@Override
-	public void onBeep(long timeInSamples)
+	public synchronized void onBeep(long timeInSamples)
 	{
 		if(!timing) return;
 		
@@ -34,7 +34,7 @@ public class BeepTimer implements BeepInterface
 		}
 	}
 	
-	public void start(boolean isListener)
+	public synchronized void start(boolean isListener)
 	{	
 		this.isListener = isListener;
 		awaitFirst = true;
