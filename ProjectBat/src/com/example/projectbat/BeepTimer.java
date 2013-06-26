@@ -4,7 +4,7 @@ import android.util.Log;
 
 public class BeepTimer implements BeepInterface
 {
-	private boolean isListener = true, timing = true;
+	private boolean isListener = true, timing = false;
 	// the time in samples that accounts consecutive onBeep calls to the same beep signal
 	private long gracePeriod = BeepGenerator.beepPeriod * 10;
 	private long time;
