@@ -20,6 +20,8 @@
 \section{Inleiding}
 
 \section{Materiaal en methode}
+Er was gebruik gemaakt van HTC Desire C telefoons met Android 4.0.2. Om positiebepaling mogelijk te maken met deze telefoons moesten er drie problemen worden opgelost: Bluetooth communicatie, audio detectie en afstandsmeting.
+
 \subsection{Audio detectie}
 Voor het realtime detecteren van piepgeluiden moest er constant geluid opgenomen \'en geanalyseerd worden.
 De audiohardware bufferde continu een halve seconde aan audio. In een aparte thread werden er steeds twintig samples uit deze buffer opgehaald. Op deze samples werd een Fast Fourier Transformatie(FFT) toegepast. Hiermee werd het geluidssignaal als functie van tijd omgezet naar een complexe functie van amplitude en fase als functie van frequentie. 
