@@ -21,23 +21,50 @@ Dit is mijn persoonlijk verslag van mijn uitgevoerde activiteiten.
 \section*{Week 1}
 \subsection*{Maandag}
 Brainstormen
-Wiskunde voor het relatief bepalen van posities uitgewerk
+Wiskunde voor het relatief bepalen van posities uitgewerkt.
 
 \subsection*{Dinsdag}
+Media player en recorder toegevoegd, knop voor het afspelen van beep geluidje. Begonnen met Fourier analyse.
+
 \subsection*{Woensdag}
+Recorder moet aangepast worden, kan niet zomaar bestanden wegschrijven. Bij het afspelen van de opgenomen audio ontstonden er problemen. Het bestand moet world-readable zijn, dus door andere programma's gelezen kunnen worden, omdat media player een externe applicatie gebruikt om geluiden af te spelen.
+
+Library gebruiken voor FFT: https://sites.google.com/site/piotrwendykier/software/jtransforms Library voor plots: http://androidplot.com
+
+Recorder hoeft niet per se als bestand op te slaan, kan ook streamen.
+
 \subsection*{Vrijdag}
+Beep generatie i.p.v. afspelen bestand, zodat specifieke patronen gegenereerd kunnen worden. Streaming recorder implementeren.
 
 \section*{Week 2}
 \subsection*{Maandag}
+FFT van geluidssignaal weergegeven. Beep frequentie op 4410hz gezet, grafiek met range van -5$\%$ tot +5$\%$ gemaakt. Jos helpen met bluetooth. Bluetooth implementatie met z'n tweeën helemaal opnieuw gedaan en werkend gekregen, bluetooth zelf is alleen niet geschikt voor connecties met meer dan twee devices.
+
 \subsection*{Dinsdag}
+Bluetooth helemaal opnieuw geschreven samen met Jos, problemen met meerdere discoveries tegelijkertijd door interferentie.
+
 \subsection*{Woensdag}
+Merge en opschoning van code. Streaming recorder aangepast zodat er een precies aantal samples opgevraagd kan worden. Hiermee kunnen we al streamende FFT analyses doen. De read functie van de streaming recorder is nu blokkerend, waardoor er geen inaccurate timer task meer gebruikt hoeft te worden om een bepaalde tijd te recorden. Begonnen aan de beep detector.
+
 \subsection*{Vrijdag}
+Detector afgemaakt, FFT foutjes verholpen. Beepjes worden nu herkend.
+Eerder gemaakte grafieken kloppen niet.
 
 \section*{Week 3}
 \subsection*{Maandag}
+Samen met Jos netwerk code verder getest en gedebugged. Timer gemaakt op basis van mic sampling rate. Beep herkenningstests gedaan, herkennen duurde gemiddeld 6000 samples. Dat bleek te liggen aan een delay in afspelen. Poging gedaan tot deze delay te verminderen door een continue signaal af te spelen op een lagere sampling rate en dan kort terug te zetten naar de hogere. Werkte niet.
+
 \subsection*{Dinsdag}
+Netwerk code verder getest. Beeptimer aangepast zodat alles goed werkt voor zowel de verzender als de ontvanger(echo bouncer).
+
 \subsection*{Woensdag}
+Laatste bug fixes. Experimenteren met afstandsmetingen. Poster uitgewerkt.
+
+\subsection*{Donderdag}
+Poster afgewerkt.
+
 \subsection*{Vrijdag}
+Presentatie.
 
 \end{document}
 
