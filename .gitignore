@@ -6,4 +6,7 @@ ProjectBat/.classpath
 *.aux
 *.log
 *.synctex.gz
+*.bbl
+*.out
+
 
