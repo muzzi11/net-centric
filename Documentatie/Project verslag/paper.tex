@@ -35,7 +35,12 @@ De experimenten met de Android-applicatie werden uitgevoerd op HTC Desire C tele
 \subsection{Bluetooth}
 Er zijn minstens drie Android-apparaten nodig om lokaal de positie van \'e\'en Android-apparaat te kunnen bepalen. De benodigde communicatie verliep via een peer-to-peer \cite{schollmeier2001definition} netwerk van Bluetooth \cite{haartsen2000bluetooth} verbindingen.
 
-Alle deelnemende apparaten moesten op \textit{Bluetooth Discoverable} worden gezet voor een oneindige periode. Zoals in figuur is getoond, startte het proces bij \'e\'en node. Deze zou zoeken naar naburige Bluetooth apparaten met het Bluetooth Discovery proces. Dit proces werd telkens gestopt wanneer er \'e\'en apparaat werd gevonden. Vervolgens werd er geprobeerd met dit apparaat te verbinden, in figuur ge\"ilustreerd als de groene telefoon. Als dit mislukte, werd Bluetooth Discovery opnieuw opgestart.
+\begin{figure}[h]
+\centering
+\includegraphics[scale=0.5]{bluetooth}
+\caption{opzetten van peer-to-peer Bluetooth-netwerk}
+\end{figure}
+Alle deelnemende apparaten moesten op \textit{Bluetooth Discoverable} worden gezet voor een oneindige periode. Zoals in figuur 1 is getoond, startte het proces bij \'e\'en node. Deze zou zoeken naar naburige Bluetooth apparaten met het Bluetooth Discovery proces. Dit proces werd telkens gestopt wanneer er \'e\'en apparaat werd gevonden. Vervolgens werd er geprobeerd met dit apparaat te verbinden, in figuur ge\"ilustreerd als de groene telefoon. Als dit mislukte, werd Bluetooth Discovery opnieuw opgestart.
 
 Indien het verbinden van beide apparaten was geslaagd, werd Bluetooth Discoverable uitgezet. De laatst toegevoegde node ging zoeken naar nieuwe toevoegingen voor het netwerk. Dit proces herhaalde zich totdat er na een aantal Bluetooth Discoveries geen nieuwe apparaten waren gevonden. Hierna was het dus niet meer mogelijk om het netwerk uit te breiden. Alle nodes in het netwerk waren niet meer Discoverable.
 
@@ -53,18 +58,20 @@ Het tijdsverschil tussen het versturen en ontvangen van piepgeluiden kon worden 
 
 \section{Resultaten}
 \label{sec:resultaten}
-In figuur 1 en 2 
-\begin{figure}[h]
+Figuur 2 en 3 tonen de gemiddelde fouten bij de afstandsmetingen voor geluidslengtes van respectievelijk 150 en 300 samples.
+\begin{figure}[h!]
 \centering
 \includegraphics[scale=0.4]{150-samples}
-\caption{Gemiddelde fout bij piepgeluid met geluidslengte van 150 samples.}
+\caption{gemiddelde fout bij piepgeluid met geluidslengte van 150 samples.}
 \end{figure}
 
-\begin{figure}[h]
+\begin{figure}[h!]
 \centering
 \includegraphics[scale=0.4]{300-samples}
-\caption{Gemiddelde fout bij piepgeluid met geluidslengte van 150 samples.}
+\caption{gemiddelde fout bij piepgeluid met geluidslengte van 150 samples.}
 \end{figure}
+
+Het aantal metingen dat correct is binnen een foutmarge van 10 cm is $16.7 \%$ voor piepgeluiden met een lengte van zowel 150 als 300 samples. 
 
 \section{Discussie}
 \label{sec:discussie}
