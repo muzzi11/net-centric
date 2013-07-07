@@ -34,7 +34,17 @@ De afstand tussen twee Android-apparaten werd bepaald door het tijdsverschil tus
 Het tijdsverschil tussen het versturen en ontvangen van piepgeluiden kon worden gemeten door het aantal samples tussen twee piepgeluiden te gebruiken. Het twee keer achterelkaar detecteren van hetzelfde piepgeluid, werd voorkomen door een korte periode na een detectie niks te detecteren. De looptijd kon exact worden verkregen door te corrigeren voor de verwerkingstijd die nodig is bij het afspelen van geluid. Voor de master werd het aantal samples tussen de detectie van zijn eigen piep en dat van de respons gemeten. Bij de slave werd het verschil gemeten tussen de detectie van het eerste piepgeluid en dat van zichzelf. Dit verschil werd via Bluetooth naar de master verstuurd. De master trok deze waarde af van de gemeten totaal aantal samples totdat een andere piep werd gehoord. Aan de hand van de samplerate (44100Hz) kon de tijdsduur worden bepaald, hiermee kon vervolgens de afstand worden berekend.
 
 \section{Resultaten}
+\begin{figure}[h]
+\centering
+\includegraphics[scale=0.4]{150-samples}
+\caption{Gemiddelde fout bij piepgeluid met geluidslengte van 150 samples.}
+\end{figure}
 
+\begin{figure}[h]
+\centering
+\includegraphics[scale=0.4]{300-samples}
+\caption{Gemiddelde fout bij piepgeluid met geluidslengte van 150 samples.}
+\end{figure}
 
 \section{Discussie}
 
