@@ -7,6 +7,7 @@
 \usepackage{eurosym}
 \usepackage{url}
 \usepackage{graphicx}
+\usepackage{hyperref}
 
 \author{Jos Bonsink \& Mustafa Karaalioglu}
 
@@ -19,15 +20,39 @@
 
 \section{Inleiding}
 
+Enkele groepen hadden besloten met robots te gaan werken. Hierbij was het nodig om realtime de lokale posities van de robots te kunnen bepalen. Tegenwoordig wordt positiebepaling voornamelijk gedaan met behulp van GPS. Echter, is dit niet overal beschikbaar. Tevens is GPS slechts nauwkeurig tot op enkele meters. GPS is dus niet geschikt voor positiebepaling in kleine ruimtes. Andere groepen kozen ervoor om gebruik te maken van \textit{image vision} waar de robots altijd in beeld moet zijn. Dit artikel onderzoekt de mogelijkheden om posities akoestisch te bepalen.
 
+Er is reeds onderzoek geweest naar de applicatie van geluid om positie te bepalen. Enzo Mumolo, Massimiliano Nolich en Gianni Vercelli hadden een algoritme ontwikkeld voor realtime lokalisatie voor het gebruik van een microfoonarray in re\"ele omstandigheden. Zij haalden een precisie van ongeveer 20 cm voor 90\% van alle gevallen in luidruchtige omstandigheden \cite{mumolo2003algorithms}. Een microfoonarray plaatsen op een robot is duur en log. Er is ook onderzoek geweest naar goedkopere oplossingen zoals een telefoon. 
 
-\section{Materiaal en methode}
+Microsoft Asia had onderzoek gepleegd naar het gebruik van telefoons om afstanden te bepalen. Ze hadden een algoritme ontwikkeld dat tot een paar centimeter precies was in stille omgevingen \cite{peng2007beepbeep}. Vervolgonderzoek breidde dit uit tot volledige positiebepaling met behulp van geluid en andere sensoren zoals een gyroscoop. Zij behaalden een resolutie van 13.9 cm voor 90\% van de gevallen \cite{qiu2011feasibility}.
+
+Zou dit preciezer kunnen? Hoe precies kan er realtime een Android-apparaat akoestisch gelokaliseerd worden? De verwachting is dat een resolutie van 10 cm te behalen moet zijn. Dit is gebaseerd op de volgende feiten: de samplerate van een microfoon is 44100 Hz, de geluidssnelheid is 340 meter per seconde, een piepgeluid kan binnen 25 samples worden herkend.
+
+Er zal een Android-applicatie worden ontwikkeld waarin realtime piepgeluiden gegenereerd en gedetecteerd kunnen worden met een resolutie van 25 samples. Het artikel is als volgt ingedeeld: paragraaf \ref{sec:materialen} beschrijft de gebruikte materialen en ontwikkelde methoden om realtime accurate akoestische lokalisatie uit te voeren, paragraaf \ref{sec:discussie} worden de resultaten getoond in paragraaf \ref{sec:resultaten} ge\"evalueerd en worden enkele conclusies getrokken.
+
+\section{Materialen en methoden}
+\label{sec:materialen}
+
+\subsection{Bluetooth}
+Er zijn minstens drie Android-apparaten nodig om lokaal de positie van \'e\'en Android-apparaat te kunnen bepalen. De benodigde communicatie verliep via een peer-to-peer \cite{schollmeier2001definition} netwerk van Bluetooth \cite{haartsen2000bluetooth} verbindingen.
+
+Alle deelnemende apparaten moesten op \textit{Bluetooth Discoverable} worden gezet voor een oneindige periode. Zoals in figuur is getoond, startte het proces bij \'e\'en node. Deze zou zoeken naar naburige Bluetooth apparaten met het Bluetooth Discovery proces. Dit proces werd telkens gestopt wanneer er \'e\'en apparaat werd gevonden. Vervolgens werd er geprobeerd met dit apparaat te verbinden, in figuur ge\"ilustreerd als de groene telefoon. Als dit mislukte, werd Bluetooth Discovery opnieuw opgestart.
+
+Indien het verbinden van beide apparaten was geslaagd, werd Bluetooth Discoverable uitgezet. De laatst toegevoegde node ging zoeken naar nieuwe toevoegingen voor het netwerk. Dit proces herhaalde zich totdat er na een aantal Bluetooth Discoveries geen nieuwe apparaten waren gevonden. Hierna was het dus niet meer mogelijk om het netwerk uit te breiden. Alle nodes in het netwerk waren niet meer Discoverable.
+
+Elke nieuwe node in het netwerk ontvangt van zijn \textit{parent} een lijst met de reeds bekende mac-adressen. De node voegt zijn eigen mac-adres aan deze lijst toe. Vervolgens stuurt hij zijn eigen mac-adres naar zijn parent, die dit adres aan zijn eigen lijst toevoegt. Het mac-adres propageert door het netwerk totdat het mac-adres bij de root node is terechtgekomen. Een lijst van alle mac-adressen is op elke apparaat beschikbaar. 
 
 \section{Resultaten}
+\label{sec:resultaten}
 
 \section{Discussie}
+\label{sec:discussie}
 
 \section{Nawoord}
+\label{sec:nawoord}
+
+\bibliographystyle{plain}
+\bibliography{refs}
 
 \end{document}
 
