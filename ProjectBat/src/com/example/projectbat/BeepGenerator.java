@@ -8,7 +8,7 @@ import android.util.Log;
 public class BeepGenerator
 {
 	public static final int beepPeriod = 5;
-	private final short buffer[] = new short[60 * beepPeriod];
+	private final short buffer[] = new short[200 * beepPeriod];
 	private final int sampleRate = 44100;
 	private final AudioTrack track;
 	
