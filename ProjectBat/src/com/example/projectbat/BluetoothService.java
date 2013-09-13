@@ -39,7 +39,7 @@ public class BluetoothService
 	public final BluetoothInterface btInterface;
 	
 	public final LinkBuildingHandlers linkBuildingHandlers;
-	public final AudioHandlers audioHandlers;
+	public final MessageHandler messageHandler;
 	
 	public final ArrayList<String> addresses = new ArrayList<String>();
 	
@@ -55,6 +55,7 @@ public class BluetoothService
 	public final int START_LISTENING = 2;	
 	public final int ACK_LISTENING = 3;
 	public final int TIME_MEASUREMENT = 4;
+	public final int NEXT_BOSS = 5;
 	
 	public BluetoothService(final BluetoothInterface ie)
 	{
@@ -62,7 +63,7 @@ public class BluetoothService
 		btAdapter = BluetoothAdapter.getDefaultAdapter();	
 		
 		linkBuildingHandlers = new LinkBuildingHandlers(this);
-		audioHandlers = new AudioHandlers(this);
+		messageHandler = new MessageHandler(this);
 	}
 
 	public synchronized void start()
@@ -333,7 +334,7 @@ public class BluetoothService
 						
 						handlerId = Integer.parseInt(data.get(0));
 						
-						audioHandlers.handlerMap.get(handlerId).handler(data);								
+						messageHandler.Handle(handlerId, data);								
 						relayMessage(data, STRING);						
 					}
 				});
@@ -353,7 +354,7 @@ public class BluetoothService
 						handlerId = Integer.parseInt(data.get(3));
 						
 						if ( recipient.equals(btAdapter.getAddress()) )
-							audioHandlers.handlerMap.get(handlerId).handler(data);							
+							messageHandler.Handle(handlerId, data);							
 						else						
 							relayMessage(data, OBJECT);
 					}
